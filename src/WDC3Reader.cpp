@@ -83,18 +83,21 @@ WDC3Reader::WDC3Reader(std::ifstream& inputStream)
         }
     } 
 
+
+    _copyData = std::map<int,int>();
     auto previousStringTableSize = 0, previousRecordCount = 0;
     auto headerValue = header.HeaderData;
+    auto recordSize = 0;
     char* readBuffer = nullptr;
     auto stringTable = std::map<long,std::string>();
     for (auto& section : sections)
     {       
         if((headerValue.Flags & DB2Flags::Sparse) != headerValue.Flags)
         {
-            auto recordSizeInBytes = section.NumRecords *  headerValue.RecordSize;
-            readBuffer = new char[recordSizeInBytes];
+            recordSize = section.NumRecords *  headerValue.RecordSize;
+            readBuffer = new char[recordSize];
 
-            inputStream.read(readBuffer,recordSizeInBytes);
+            inputStream.read(readBuffer, recordSize);
 
             for(auto i = 0 ; i < section.StringTableSize;)
             {
@@ -111,16 +114,47 @@ WDC3Reader::WDC3Reader(std::ifstream& inputStream)
         }
         else
         {
-            auto recordSize = section.OffsetRecordsEndOffset - section.FileOffset;
+            recordSize = section.OffsetRecordsEndOffset - section.FileOffset;
             readBuffer = new char[recordSize];
 
             inputStream.read(readBuffer,recordSize);
 
             if (inputStream.tellg() != section.OffsetRecordsEndOffset)
-                std::cout << "Over/Under Read Section" << std::endl;
-
-            
+                std::cout << "Over/Under Read Section" << std::endl;     
         } 
+
+        if (section.TactKeyLookup != 0 && MemoryEmpty(readBuffer, recordSize))
+        {
+            previousRecordCount += section.NumRecords;
+            continue;
+        }
+
+        auto indexSize = section.IndexDataSize / 4;
+        auto indexData = std::vector<int>(indexSize);
+        auto indexDataPointer = reinterpret_cast<char*>(indexData.data());
+        inputStream.read(indexDataPointer, section.IndexDataSize);
+
+        if(indexData.size() > 0 )
+            //fill index 0-X based on records
+
+        if(section.CopyTableCount > 0)
+        {   
+            for (int i = 0; i < section.CopyTableCount; i++)
+            {
+                int index;
+                int value;
+
+                auto indexPtr = reinterpret_cast<char*>(&index);
+                auto valuePtr = reinterpret_cast<char*>(&value);
+
+                inputStream.read(indexPtr, 4);
+                inputStream.read(valuePtr, 4);
+
+                 _copyData[index] = value;
+            }
+               
+        }
+
 
         // delete[] readBuffer; 
     }
@@ -131,3 +165,10 @@ std::string WDC3Reader::ReadString(std::ifstream& inputStream)
    std::getline(inputStream, string, '\0');
    return string;
  }
+
+bool WDC3Reader::MemoryEmpty(char* data, size_t length)
+{
+    if (length == 0) return 1;
+    if (*data) return 0;
+    return memcmp(data, data + 1, length - 1) == 0;
+}

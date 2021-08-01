@@ -177,9 +177,12 @@ private:
     const unsigned int WDC3FmtSig = 0x33434457;
 
     std::ifstream _stream;
+
+    std::map<int,int> _copyData;
 public:
     WDC3Reader(std::ifstream& inputStream);
 private:
     std::string ReadString(std::ifstream& inputStream);
+    bool MemoryEmpty(char* data, size_t length);
 };
 
