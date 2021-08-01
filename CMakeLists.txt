@@ -24,6 +24,6 @@ collect_files(TestConsole_headers test false "*.h;*.hpp;*.inl" "")
 
 add_library(DBFileReaderLib  ${DBFileReaderLib_source} ${DBFileReaderLib_headers})
 
-add_executable(TestConsole ${TestConsole_source} ${TestConsole_headers} ${DBFileReaderLib_headers})
+add_executable(TestConsole ${TestConsole_source} ${TestConsole_headers})
 
 target_link_libraries(TestConsole DBFileReaderLib)

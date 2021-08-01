@@ -12,11 +12,17 @@ DBCTable BlizzardDatabase::ReadTable(std::string tableName)
     std::ifstream fileStream;
     fileStream.open(absoluteFilePath);
     fileStream.read(buffer,4);
-    fileStream.close();
 
     std::string str(buffer,4);
 
     std::cout << "File Header:" << str << std::endl;
+
+    if (str == "WDC3")
+    {
+        auto reader = WDC3Reader(fileStream);
+    }
+
+    fileStream.close();
 
     return DBCTable();
 }
