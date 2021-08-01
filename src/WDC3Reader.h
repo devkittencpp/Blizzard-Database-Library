@@ -1,12 +1,12 @@
 #pragma once
+#include<type_traits>
 #include<fstream>
 #include<iostream>
 #include<vector>
 #include<map>
+#include<sstream>
 
-#pragma pack(push,2)
-
-enum DB2Flags : unsigned short
+enum class DB2Flags : unsigned short
 {
     None = 0x0,
     Sparse = 0x1,
@@ -16,6 +16,26 @@ enum DB2Flags : unsigned short
     BitPacked = 0x10
 };
 
+inline DB2Flags operator & (DB2Flags lhs, DB2Flags rhs)
+{
+    using T = std::underlying_type_t <DB2Flags>;
+    return static_cast<DB2Flags>(static_cast<T>(lhs) & static_cast<T>(rhs));
+}
+
+
+
+enum class CompressionType : int
+{
+    None = 0,
+    Immediate = 1,
+    Common = 2,
+    Pallet = 3,
+    PalletArray = 4,
+    SignedImmediate = 5
+};
+
+
+#pragma pack(push,2)
 struct WDC3HeaderData
 {
     int RecordsCount;
@@ -36,17 +56,6 @@ struct WDC3HeaderData
     int commonDataSize;
     int palletDataSize;
     int sectionsCount;
-};
-;
-
-enum CompressionType : int
-{
-    None = 0,
-    Immediate = 1,
-    Common = 2,
-    Pallet = 3,
-    PalletArray = 4,
-    SignedImmediate = 5
 };
 
 struct WDC3SectionData
@@ -159,8 +168,6 @@ union WDC3Section
     char rawBytes[sizeof(WDC3SectionData)];
 };
 
-
-
 #pragma pack(pop)
 
 class WDC3Reader
@@ -172,5 +179,7 @@ private:
     std::ifstream _stream;
 public:
     WDC3Reader(std::ifstream& inputStream);
+private:
+    std::string ReadString(std::ifstream& inputStream);
 };
 

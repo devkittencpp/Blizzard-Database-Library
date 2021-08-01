@@ -85,15 +85,49 @@ WDC3Reader::WDC3Reader(std::ifstream& inputStream)
 
     auto previousStringTableSize = 0, previousRecordCount = 0;
     auto headerValue = header.HeaderData;
+    char* readBuffer = nullptr;
+    auto stringTable = std::map<long,std::string>();
     for (auto& section : sections)
-    {
-        inputStream.seekg(section.FileOffset);
-
-        if((headerValue.Flags & DB2Flags::Sparse) == headerValue.Flags)
+    {       
+        if((headerValue.Flags & DB2Flags::Sparse) != headerValue.Flags)
         {
+            auto recordSizeInBytes = section.NumRecords *  headerValue.RecordSize;
+            readBuffer = new char[recordSizeInBytes];
 
-        }       
+            inputStream.read(readBuffer,recordSizeInBytes);
+
+            for(auto i = 0 ; i < section.StringTableSize;)
+            {
+                auto lastPosition = inputStream.tellg(); //56184
+                auto string = ReadString(inputStream);
+                stringTable[i+previousStringTableSize] = string;
+
+                i +=  inputStream.tellg() - lastPosition; 
+
+                std::cout << lastPosition << " " << i << " " << string << std::endl;
+            }
+
+            previousStringTableSize += section.StringTableSize;
+        }
+        else
+        {
+            auto recordSize = section.OffsetRecordsEndOffset - section.FileOffset;
+            readBuffer = new char[recordSize];
+
+            inputStream.read(readBuffer,recordSize);
+
+            if (inputStream.tellg() != section.OffsetRecordsEndOffset)
+                std::cout << "Over/Under Read Section" << std::endl;
+
+            
+        } 
+
+        // delete[] readBuffer; 
     }
-
-
 }
+std::string WDC3Reader::ReadString(std::ifstream& inputStream)
+{
+   std::string string;
+   std::getline(inputStream, string, '\0');
+   return string;
+ }

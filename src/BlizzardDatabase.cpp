@@ -10,7 +10,7 @@ DBCTable BlizzardDatabase::ReadTable(std::string tableName)
     auto absoluteFilePath = _databaseFilesLocation.append("\\").append(tableName);
     char buffer[4];
     std::ifstream fileStream;
-    fileStream.open(absoluteFilePath);
+    fileStream.open(absoluteFilePath, std::ifstream::binary);
     fileStream.read(buffer,4);
 
     std::string str(buffer,4);
