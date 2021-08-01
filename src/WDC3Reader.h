@@ -128,11 +128,11 @@ union ColumnCompressionData
 
 struct ColumnMetaData
 {
-    unsigned short RecordOffset; //2
-    unsigned short Size; //2
-    unsigned int AdditionalDataSize; //4
-    CompressionType CompressionType; //2
-    ColumnCompressionData compressionData; //12
+    unsigned short RecordOffset; 
+    unsigned short Size; 
+    unsigned int AdditionalDataSize; 
+    CompressionType CompressionType; 
+    ColumnCompressionData compressionData;
 };
 
 union ColumnMeta
