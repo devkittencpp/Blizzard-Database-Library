@@ -58,6 +58,12 @@ struct WDC3HeaderData
     int sectionsCount;
 };
 
+struct SparseEntry
+{
+    unsigned int Offset;
+    unsigned short Size;
+};
+
 struct WDC3SectionData
 {
     unsigned long long TactKeyLookup;

@@ -151,10 +151,54 @@ WDC3Reader::WDC3Reader(std::ifstream& inputStream)
                 inputStream.read(valuePtr, 4);
 
                  _copyData[index] = value;
-            }
-               
+            }              
         }
 
+        if (section.OffsetMapIDCount > 0)
+        {
+            // HACK unittestsparse is malformed and has sparseIndexData first
+            //if (header.HeaderData.TableHash == 145293629)
+            //    reader.BaseStream.Position += 4 * section.OffsetMapIDCount;
+
+            auto sparseDataEntries = std::vector<SparseEntry>();
+            auto vectorPtr = reinterpret_cast<char*>(sparseDataEntries.data());
+            inputStream.read(vectorPtr, section.OffsetMapIDCount);   
+        }
+
+        if (section.ParentLookupDataSize > 0)
+        {         
+           //var oldPosition = reader.BaseStream.Position;
+           //refData.NumRecords = reader.ReadInt32();
+           //refData.MinId = reader.ReadInt32();
+           //refData.MaxId = reader.ReadInt32();
+           //
+           //var entries = reader.ReadArray<ReferenceEntry>(refData.NumRecords);
+           //for (int i = 0; i < entries.Length; i++)
+           //{
+           //    refData.Entries[entries[i].Index] = entries[i].Id;
+           //}
+            
+            std::cout << "Has Lookup Data" << std::endl;
+        }
+
+        if (section.OffsetMapIDCount > 0)
+        {
+            //int[] sparseIndexData = reader.ReadArray<int>(section.OffsetMapIDCount);
+            //
+            //if (section.IndexDataSize > 0 && IndexData.Length != sparseIndexData.Length)
+            //    throw new Exception("m_indexData.Length != sparseIndexData.Length");
+            //
+            //IndexData = sparseIndexData;
+        }
+
+        //Parsing Records
+        int position = 0;
+        for (int i = 0; i < section.NumRecords; i++)
+        {
+          
+        }
+
+        previousRecordCount += section.NumRecords;
 
         // delete[] readBuffer; 
     }
