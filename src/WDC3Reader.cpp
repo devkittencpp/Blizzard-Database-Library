@@ -134,7 +134,7 @@ WDC3Reader::WDC3Reader(std::ifstream& inputStream)
         auto indexDataPointer = reinterpret_cast<char*>(indexData.data());
         inputStream.read(indexDataPointer, section.IndexDataSize);
 
-        if(indexData.size() > 0 )
+        if(indexData.size() > 0 ){}
             //fill index 0-X based on records
 
         if(section.CopyTableCount > 0)
