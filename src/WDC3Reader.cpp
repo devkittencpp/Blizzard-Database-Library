@@ -1,6 +1,6 @@
 #include <WDC3Reader.h>
 
-WDC3Reader::WDC3Reader(std::ifstream& inputStream) 
+WDC3Reader::WDC3Reader(std::ifstream& inputStream) : _streamReader(inputStream)
 {
     inputStream.seekg (0, inputStream.end);
     auto length = inputStream.tellg();
