@@ -6,6 +6,7 @@
 #include "DbcTable.h"
 #include "WDC3Reader.h"
 #include <DatabaseDefinition.h>
+#include <Shared.h>
 
 class BlizzardDatabase
 {

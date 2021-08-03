@@ -8,6 +8,7 @@
 #include <vector>
 #include <algorithm>
 #include <regex>
+#include<Shared.h>
 
 class DatabaseDefinition
 {
@@ -15,8 +16,5 @@ private:
 	std::string _databaseDefinitionFile;
 public:
 	DatabaseDefinition(std::string databaseDefinitionsDirectory);
-
-	//Tempt until I understand the format of DBD files
-	void Read();
-    std::vector<std::string> Split(const std::string& s, char delim);
+	DBDefinition Read();
 };
