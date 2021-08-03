@@ -40,6 +40,7 @@ public:
 
     std::unique_ptr<char[]> ReadBlock(std::size_t length);
     std::string ReadString();
+    std::string ReadString(std::size_t length);
     void Jump(std::streampos position);
     void JumpEnd();
     void JumpStart();

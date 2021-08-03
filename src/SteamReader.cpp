@@ -12,6 +12,13 @@ std::string StreamReader::ReadString()
    return string;
 }
 
+std::string StreamReader::ReadString(std::size_t length)
+{
+    std::string string;
+    _underlyingStream.getline(&string[0], 5);
+    return string;
+}
+
 std::unique_ptr<char[]> StreamReader::ReadBlock(std::size_t length)
 {
     std::unique_ptr<char[]> blockArray(new char[length]);
