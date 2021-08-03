@@ -1,4 +1,3 @@
-
 #include<BlizzardDatabase.h>
 #include<iostream>
 #include<string>
