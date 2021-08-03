@@ -1,0 +1,107 @@
+#include <DatabaseDefinition.h>
+
+DatabaseDefinition::DatabaseDefinition(std::string databaseDefinitionsFile) : _databaseDefinitionFile(databaseDefinitionsFile)
+{
+
+}
+
+
+void DatabaseDefinition::Read()
+{
+    std::ifstream fileStream;
+    fileStream.open(_databaseDefinitionFile);
+
+    auto validTypes = std::vector<std::string>{ "uint", "int", "float", "string", "locstring" };
+    auto columnDefinitionDictionary = std::map<std::string, ColumnDefinition>();
+    auto fileLines = std::vector<std::string>();
+    auto line = std::string();
+
+    while (std::getline(fileStream, line))
+    {
+        fileLines.push_back(line);
+    }
+
+    auto lineCounter = 1;
+    auto totalLines = fileLines.size();
+    auto firstLine = fileLines[0];
+
+    if (firstLine.starts_with("COLUMNS") == false)
+    {
+        std::cout << "unexpected format" << std::endl;
+        return;
+    }
+
+    while (lineCounter < totalLines)
+    {
+        auto line = fileLines[lineCounter];
+
+        if (line.empty())
+            break;
+
+        auto columnDefinition = ColumnDefinition();
+
+        if (line.find_first_not_of(" ") == std::string::npos)
+        {
+            std::cout << "format invalid, no type specified" << std::endl;
+            return;
+        }
+
+        auto indexOfForeignKey = line.find_first_of("<");
+        auto indexOfTypeSpace = line.find_first_of(" ");
+        auto indexofTypeEnd = indexOfForeignKey == std::string::npos ? indexOfTypeSpace : indexOfForeignKey;
+        auto columnType = line.substr(0, indexofTypeEnd);
+
+        if (!std::any_of(validTypes.begin(), validTypes.end(), [columnType](std::string comparison) {return comparison == columnType; }))
+        {
+            std::cout << "column type invalid : " << columnType << std::endl;
+            return;
+        }
+
+        columnDefinition.type = columnType;
+
+        auto indexOfForeignKeyStart = line.find_first_of("<");
+        auto indexOfForeignKeyEnd = line.find_first_of(">");
+
+        if (indexOfForeignKeyStart != std::string::npos && indexOfForeignKeyEnd != std::string::npos)
+        {         
+            auto startIndex = indexOfForeignKeyStart + 1;
+            auto foreignKey = line.substr(startIndex, indexOfForeignKeyEnd - startIndex);
+            auto foreignKeyComponents = Split(foreignKey, '::');
+
+            if (foreignKeyComponents.size() != 2)
+            {
+                std::cout << "Foreign Key Malformed" << std::endl;
+                return;
+            }
+
+            columnDefinition.foreignTable = foreignKeyComponents[0];
+            columnDefinition.foreignColumn = foreignKeyComponents[1];
+        }
+
+        auto name = std::string("Nameless Column > ").append(std::to_string(lineCounter));
+
+
+
+
+        columnDefinitionDictionary.emplace(name, columnDefinition);
+
+        lineCounter++;
+    }
+
+    auto x = 0;
+}
+
+std::vector<std::string> DatabaseDefinition::Split(const std::string & s, char delim)
+{
+    std::vector<std::string> result;
+    std::stringstream ss(s);
+    std::string item;
+
+    while (std::getline(ss, item, delim)) 
+    {
+        if(!item.empty())
+            result.push_back(item);
+    }
+
+    return result;
+}

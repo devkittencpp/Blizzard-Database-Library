@@ -11,6 +11,8 @@ DBCTable BlizzardDatabase::ReadTable(std::string tableName)
     auto absoluteFilePathOfDatabaseTableDefinition = _databaseDefinitionFilesLocation.append("\\").append(tableName).append(".dbd");
 
     auto databaseDefinition = DatabaseDefinition(absoluteFilePathOfDatabaseTableDefinition);
+    //auto tableDefinition = databaseDefinition.Read();
+    databaseDefinition.Read();
 
     std::ifstream fileStream;
     fileStream.open(absoluteFilePathOfDatabaseTable, std::ifstream::binary);
