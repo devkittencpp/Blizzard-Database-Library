@@ -1,23 +1,24 @@
 #include "BlizzardDatabase.h"
 
-BlizzardDatabase::BlizzardDatabase(std::string databaseCollectionDirectory) : _databaseFilesLocation(databaseCollectionDirectory)
+BlizzardDatabase::BlizzardDatabase(std::string databaseCollectionDirectory, std::string databaseDefinitionDirectory) : _databaseFilesLocation(databaseCollectionDirectory), _databaseDefinitionFilesLocation(databaseDefinitionDirectory)
 {
 
 }
 
 DBCTable BlizzardDatabase::ReadTable(std::string tableName)
 {
-    auto absoluteFilePath = _databaseFilesLocation.append("\\").append(tableName);
-    char buffer[4];
+    auto absoluteFilePathOfDatabaseTable = _databaseFilesLocation.append("\\").append(tableName).append(".db2");
+    auto absoluteFilePathOfDatabaseTableDefinition = _databaseDefinitionFilesLocation.append("\\").append(tableName).append(".dbd");
+
     std::ifstream fileStream;
-    fileStream.open(absoluteFilePath, std::ifstream::binary);
-    fileStream.read(buffer,4);
+    fileStream.open(absoluteFilePathOfDatabaseTable, std::ifstream::binary);
 
-    std::string str(buffer,4);
+    auto streamReader = StreamReader(fileStream);
+    auto fileFormatIdentifier = streamReader.ReadString(4);
 
-    std::cout << "File Header:" << str << std::endl;
+    std::cout << "File Header:" << fileFormatIdentifier << std::endl;
 
-    if (str == "WDC3")
+    if (fileFormatIdentifier == "WDC3")
     {
         auto reader = WDC3Reader(fileStream);
     }

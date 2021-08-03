@@ -10,8 +10,9 @@ class BlizzardDatabase
 {
 private:
 	std::string _databaseFilesLocation;
+	std::string _databaseDefinitionFilesLocation;
 public:
-	BlizzardDatabase(std::string databaseCollectionDirectory);
+	BlizzardDatabase(std::string databaseCollectionDirectory, std::string databaseDefinitionDirectory);
 
 	DBCTable ReadTable(std::string tableName);
 };
