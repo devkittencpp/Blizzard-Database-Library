@@ -1,12 +1,14 @@
 #pragma once
 #include<type_traits>
 #include<fstream>
+#include<istream>
 #include<iostream>
 #include<vector>
 #include<map>
 #include<sstream>
 #include<StreamReader.h>
 #include<Types.h>
+#include<WDC3Row.h>
 
 class WDC3Reader
 {
@@ -20,7 +22,6 @@ private:
 public:
     WDC3Reader(std::ifstream& inputStream);
 private:
-    std::string ReadString(std::ifstream& inputStream);
     bool MemoryEmpty(char* data, size_t length);
 };
 

@@ -2,56 +2,29 @@
 
 WDC3Reader::WDC3Reader(std::ifstream& inputStream) : _streamReader(inputStream)
 {
-    inputStream.seekg (0, inputStream.end);
-    auto length = inputStream.tellg();
-    inputStream.seekg (0, inputStream.beg);
-
+    auto length = _streamReader.Length();
     if(length < _headerSize)
     {
         std::cout << "Error Occured While Parsing WDC3 Header, Header to short." << std::endl;
         return;
     }
 
-    char magicNumber[4];
-    inputStream.read(magicNumber, 4);
-    unsigned int magic;
-    std::memcpy(&magic, magicNumber, sizeof(unsigned int));
+    _streamReader.Jump(0);
 
-    if (magic != WDC3FmtSig)
+    auto magicNumber = _streamReader.Read<unsigned int>();
+    if (magicNumber != WDC3FmtSig)
     {
         std::cout << "Error Occured While Parsing WDC3 Header, Magic doesnt Match." << std::endl;
         return;
     }
 
-    auto header = WDC3Header();
-    inputStream.read(header.rawBytes, 68);
-
-    if (header.HeaderData.sectionsCount == 0 || header.HeaderData.RecordsCount == 0)
+    auto header = _streamReader.Read<WDC3HeaderData>();
+    if (header.sectionsCount == 0 || header.RecordsCount == 0)
         return;
 
-    auto sections = std::vector<WDC3SectionData>();
-    for(int i = 0; i < header.HeaderData.sectionsCount; i++)
-    {
-        auto section = WDC3Section();
-        inputStream.read(section.rawBytes, sizeof(WDC3SectionData));
-        sections.push_back(section.SectionData);
-    }
-
-    auto metaData = std::vector<FieldMetaData>();
-    for (int i = 0; i < header.HeaderData.FieldsCount; i++)
-    {
-        auto fieldMetaData = FieldMeta();
-        inputStream.read(fieldMetaData.rawBytes, sizeof(FieldMetaData));
-        metaData.push_back(fieldMetaData.HeaderData);
-    }
-
-    auto columnData = std::vector<ColumnMetaData>();
-    for (int i = 0; i < header.HeaderData.FieldsCount; i++)
-    {
-        auto columnMetaData = ColumnMeta();
-        inputStream.read(columnMetaData.rawBytes, sizeof(ColumnMetaData));
-        columnData.push_back(columnMetaData.HeaderData);
-    }
+    auto sections = _streamReader.ReadArray<WDC3SectionData>(header.sectionsCount);
+    auto metaData = _streamReader.ReadArray<FieldMetaData>(header.FieldsCount);
+    auto columnData = _streamReader.ReadArray<ColumnMetaData>(header.FieldsCount);
    
     auto palletData = std::map<int,std::vector<Int32>>();
     for (int i = 0; i < columnData.size(); i++)
@@ -59,15 +32,12 @@ WDC3Reader::WDC3Reader(std::ifstream& inputStream) : _streamReader(inputStream)
         if (columnData[i].CompressionType == CompressionType::Pallet || columnData[i].CompressionType == CompressionType::PalletArray)
         {
             auto length = columnData[i].AdditionalDataSize / sizeof(int);
-            auto list = std::vector<Int32>(length);
-            auto startOfList = reinterpret_cast<char*>(list.data());
-
-            inputStream.read(startOfList, length * sizeof(int));
-
-            palletData.emplace(i, list);
+            auto pallet = _streamReader.ReadArray<Int32>(length); 
+            palletData.emplace(i, pallet);
         }
     }
 
+    //-- not yet optimised --
     auto commonData = std::map<int, std::map<int, Int32>>();
     for (int i = 0; i < columnData.size(); i++)
     {
@@ -83,29 +53,30 @@ WDC3Reader::WDC3Reader(std::ifstream& inputStream) : _streamReader(inputStream)
         }
     } 
 
-
     _copyData = std::map<int,int>();
+    auto stringTable = std::map<long, std::string>();
+
     auto previousStringTableSize = 0, previousRecordCount = 0;
-    auto headerValue = header.HeaderData;
     auto recordSize = 0;
-    char* readBuffer = nullptr;
-    auto stringTable = std::map<long,std::string>();
+
+    std::unique_ptr<char[]> recordDataBlock = nullptr;
+
     for (auto& section : sections)
     {       
-        if((headerValue.Flags & DB2Flags::Sparse) != headerValue.Flags)
-        {
-            recordSize = section.NumRecords *  headerValue.RecordSize;
-            readBuffer = new char[recordSize];
+        _streamReader.Jump(section.FileOffset);
 
-            inputStream.read(readBuffer, recordSize);
+        if((header.Flags & DB2Flags::Sparse) != header.Flags)
+        {
+            recordSize = section.NumRecords * header.RecordSize;
+            recordDataBlock = _streamReader.ReadBlock(recordSize);
 
             for(auto i = 0 ; i < section.StringTableSize;)
             {
-                auto lastPosition = inputStream.tellg(); //56184
-                auto string = ReadString(inputStream);
+                auto lastPosition = _streamReader.Position(); //56184
+                auto string = _streamReader.ReadString();
                 stringTable[i+previousStringTableSize] = string;
 
-                i +=  inputStream.tellg() - lastPosition; 
+                i += _streamReader.Position() - lastPosition;
 
                 std::cout << lastPosition << " " << i << " " << string << std::endl;
             }
@@ -115,54 +86,46 @@ WDC3Reader::WDC3Reader(std::ifstream& inputStream) : _streamReader(inputStream)
         else
         {
             recordSize = section.OffsetRecordsEndOffset - section.FileOffset;
-            readBuffer = new char[recordSize];
+            recordDataBlock = _streamReader.ReadBlock(recordSize);
 
-            inputStream.read(readBuffer,recordSize);
-
-            if (inputStream.tellg() != section.OffsetRecordsEndOffset)
+            if (_streamReader.Position() != section.OffsetRecordsEndOffset)
                 std::cout << "Over/Under Read Section" << std::endl;     
         } 
 
-        if (section.TactKeyLookup != 0 && MemoryEmpty(readBuffer, recordSize))
+        if (section.TactKeyLookup != 0 && MemoryEmpty(recordDataBlock.get(), recordSize))
         {
             previousRecordCount += section.NumRecords;
             continue;
         }
-
-        auto indexSize = section.IndexDataSize / 4;
-        auto indexData = std::vector<int>(indexSize);
-        auto indexDataPointer = reinterpret_cast<char*>(indexData.data());
-        inputStream.read(indexDataPointer, section.IndexDataSize);
-
-        if(indexData.size() > 0 ){}
+ 
+        auto indexData = _streamReader.ReadArray<int>(section.IndexDataSize);
+        if(indexData.size() > 0 ){
             //fill index 0-X based on records
-
+        }
+           
         if(section.CopyTableCount > 0)
         {   
             for (int i = 0; i < section.CopyTableCount; i++)
             {
-                int index;
-                int value;
-
-                auto indexPtr = reinterpret_cast<char*>(&index);
-                auto valuePtr = reinterpret_cast<char*>(&value);
-
-                inputStream.read(indexPtr, 4);
-                inputStream.read(valuePtr, 4);
+                int index = _streamReader.Read<int>();
+                int value = _streamReader.Read<int>();
 
                  _copyData[index] = value;
             }              
         }
 
+        auto sparseDataEntries = std::vector<SparseEntry>();
         if (section.OffsetMapIDCount > 0)
         {
             // HACK unittestsparse is malformed and has sparseIndexData first
-            //if (header.HeaderData.TableHash == 145293629)
-            //    reader.BaseStream.Position += 4 * section.OffsetMapIDCount;
-
-            auto sparseDataEntries = std::vector<SparseEntry>();
-            auto vectorPtr = reinterpret_cast<char*>(sparseDataEntries.data());
-            inputStream.read(vectorPtr, section.OffsetMapIDCount);   
+            if (header.TableHash == 145293629)
+            {
+                auto streamPosition = _streamReader.Position();
+                streamPosition += (4 * section.OffsetMapIDCount);
+                _streamReader.Jump(streamPosition);
+            }
+           
+            sparseDataEntries = _streamReader.ReadArray<SparseEntry>(section.OffsetMapIDCount);
         }
 
         if (section.ParentLookupDataSize > 0)
@@ -183,32 +146,40 @@ WDC3Reader::WDC3Reader(std::ifstream& inputStream) : _streamReader(inputStream)
 
         if (section.OffsetMapIDCount > 0)
         {
-            //int[] sparseIndexData = reader.ReadArray<int>(section.OffsetMapIDCount);
-            //
-            //if (section.IndexDataSize > 0 && IndexData.Length != sparseIndexData.Length)
-            //    throw new Exception("m_indexData.Length != sparseIndexData.Length");
-            //
-            //IndexData = sparseIndexData;
+            auto sparseIndexData = _streamReader.ReadArray<int>(section.OffsetMapIDCount);
+            
+            if (section.IndexDataSize > 0 && indexData.size() != sparseIndexData.size())
+                std::cout << "m_indexData.Length != sparseIndexData.Length" << std::endl;
+            
+            indexData = sparseIndexData;
         }
 
         //Parsing Records
-        int position = 0;
+        auto position = 0;
+        auto recordMemoryBuffer = MemoryBuffer(recordDataBlock.get(), recordDataBlock.get() + recordSize);
         for (int i = 0; i < section.NumRecords; i++)
-        {
-          
+        {      
+            std::istream stream(&recordMemoryBuffer);
+            auto streamReader = StreamReader(stream);
+
+            if ((header.Flags & DB2Flags::Sparse) == header.Flags)
+            {
+                streamReader.Jump(0);
+                position += sparseDataEntries[i].Size * 8;
+            }
+            else
+            {
+                std::cout << "Not Sparse" << std::endl;
+
+                streamReader.Jump(i * recordSize);
+            }
         }
 
-        previousRecordCount += section.NumRecords;
+        auto row = WDC3Row();
 
-        // delete[] readBuffer; 
+        previousRecordCount += section.NumRecords;
     }
 }
-std::string WDC3Reader::ReadString(std::ifstream& inputStream)
-{
-   std::string string;
-   std::getline(inputStream, string, '\0');
-   return string;
- }
 
 bool WDC3Reader::MemoryEmpty(char* data, size_t length)
 {
