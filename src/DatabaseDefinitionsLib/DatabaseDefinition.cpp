@@ -46,9 +46,12 @@ void DatabaseDefinition::Read()
             return;
         }
 
-        auto indexOfForeignKey = line.find_first_of("<");
-        auto indexOfTypeSpace = line.find_first_of(" ");
-        auto indexofTypeEnd = indexOfForeignKey == std::string::npos ? indexOfTypeSpace : indexOfForeignKey;
+        auto indexOfCommentsStart = line.find_first_of("//");
+        auto indexOfForeignKeyStart = line.find_first_of("<");
+        auto indexOfForeignKeyEnd = line.find_first_of(">");
+        auto indexOfNameStart = line.find_first_of(" ");
+        auto indexOfNameEnd = line.find(" ", indexOfNameStart + 1);
+        auto indexofTypeEnd = indexOfForeignKeyStart == std::string::npos ? indexOfNameStart : indexOfForeignKeyStart;
         auto columnType = line.substr(0, indexofTypeEnd);
 
         if (!std::any_of(validTypes.begin(), validTypes.end(), [columnType](std::string comparison) {return comparison == columnType; }))
@@ -58,9 +61,6 @@ void DatabaseDefinition::Read()
         }
 
         columnDefinition.type = columnType;
-
-        auto indexOfForeignKeyStart = line.find_first_of("<");
-        auto indexOfForeignKeyEnd = line.find_first_of(">");
 
         if (indexOfForeignKeyStart != std::string::npos && indexOfForeignKeyEnd != std::string::npos)
         {         
@@ -79,9 +79,28 @@ void DatabaseDefinition::Read()
         }
 
         auto name = std::string("Nameless Column > ").append(std::to_string(lineCounter));
+    
+        if (indexOfNameEnd == std::string::npos)
+        {
+            name = line.substr(indexOfNameStart+1);
+        }
 
+        if (indexOfNameStart != std::string::npos && indexOfNameEnd != std::string::npos)
+        {
+            auto adjustedIndexOfNameStart = indexOfNameStart + 1;
+            name = line.substr(adjustedIndexOfNameStart, indexOfNameEnd - adjustedIndexOfNameStart);
+        }
 
+        if (name.ends_with("?"))
+        {
+            name = name.substr(0, name.size() - 1);
+            columnDefinition.verified = true;
+        }
 
+        if (indexOfCommentsStart != std::string::npos)
+        {
+            columnDefinition.comment = line.substr(indexOfCommentsStart, line.size() - indexOfCommentsStart);
+        }
 
         columnDefinitionDictionary.emplace(name, columnDefinition);
 
