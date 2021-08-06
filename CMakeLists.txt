@@ -11,9 +11,12 @@ include(./cmake/CMakeLib.txt)
 
 project("DBCD")
 
+add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/thirdparty/SQLiteCpp")
+
 # Add the found include directories to our include list.
 INCLUDE_DIRECTORIES("${CMAKE_SOURCE_DIR}/src" )
 INCLUDE_DIRECTORIES("${CMAKE_SOURCE_DIR}/src/DatabaseDefinitionsLib")
+INCLUDE_DIRECTORIES("${CMAKE_SOURCE_DIR}/thirdparty/SQLiteCpp/include")
 
 #DbDefslibrary
 collect_files(DbDefsLib_source src/DatabaseDefinitionsLib false "*.cpp" "")
@@ -32,5 +35,6 @@ add_library(DBFileReaderLib  ${DBFileReaderLib_source} ${DBFileReaderLib_headers
 
 add_executable(TestConsole ${TestConsole_source} ${TestConsole_headers})
 
+target_link_libraries(DbDefsLib PRIVATE SQLiteCpp)
 target_link_libraries(DBFileReaderLib DbDefsLib)
 target_link_libraries(TestConsole DBFileReaderLib)
