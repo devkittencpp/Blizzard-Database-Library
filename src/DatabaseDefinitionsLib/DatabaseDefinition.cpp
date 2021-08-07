@@ -112,17 +112,20 @@ DBDefinition DatabaseDefinition::Read()
     auto builds = std::vector<Build>();
     auto buildRanges = std::vector<BuildRange>();
     auto comment = std::string();
+    auto startIndex = lineNumber + 1;
 
     auto const LAYOUT_TOKEN = std::string("LAYOUT");
     auto const BUILD_TOKEN = std::string("BUILD");
     auto const COMMENT_TOKEN = std::string("COMMENT");
 
-    for (auto index = lineNumber; index < lines.size(); index++)
+    for (auto index = startIndex; index < lines.size();)
     {
         auto line = lines[index];
 
         if (line.empty())
         {
+            std::cout << "Adding at Line " << index << std::endl;
+
             auto versionDefinition = VersionDefinitions();
             versionDefinition.builds = builds;
             versionDefinition.buildRanges = buildRanges;
@@ -163,11 +166,12 @@ DBDefinition DatabaseDefinition::Read()
             {
                 if (buildString.find_first_of('-') != std::string::npos)
                 {
-                    auto buildRanges = StringExtenstions::Split(buildString,'-');
-                    auto minBuild = Build(buildRanges[0]);
-                    auto maxBuild = Build(buildRanges[1]);
+                    auto ranges = StringExtenstions::Split(buildString,'-');
+                    auto minBuild = Build(ranges[0]);
+                    auto maxBuild = Build(ranges[1]);
 
                     auto buildRange = BuildRange(minBuild, maxBuild);
+                    buildRanges.push_back(buildRange);
                 }
                 else
                 {
