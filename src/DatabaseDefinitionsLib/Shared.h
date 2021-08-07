@@ -20,4 +20,13 @@ public:
 
         return result;
     }
+
+    static bool Compare(const std::string& lhs, const std::string& rhs)
+    {
+        auto result = lhs.compare(rhs);
+
+        if (result == 0)
+            return true;
+        return false;
+    }
 };

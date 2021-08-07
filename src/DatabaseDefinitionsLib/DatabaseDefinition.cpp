@@ -190,36 +190,33 @@ DBDefinition DatabaseDefinition::Read()
             auto definition = Definition();
             definition.IsInline = true;
 
-            auto indexOfDollerSign = line.find_first_of('$');
-           
-            if (indexOfDollerSign != std::string::npos)
-            {
-                auto nextIndexOfDollerSign = line.find('$', indexOfDollerSign + 1);
-                auto indexOfFirstDollerSignAdjusted = indexOfDollerSign + 1;
-              
-                auto annotations = line.substr(indexOfFirstDollerSignAdjusted, nextIndexOfDollerSign - indexOfFirstDollerSignAdjusted);
-
+            auto indexOfDollerSignStart = line.find_first_of('$');
+            auto indexOfDollerSignEnd = line.find('$', indexOfDollerSignStart + 1);
+            if (indexOfDollerSignStart != std::string::npos)
+            {          
+                auto indexOfFirstDollerSignAdjusted = indexOfDollerSignStart + 1;    
+                auto annotations = line.substr(indexOfFirstDollerSignAdjusted, indexOfDollerSignEnd - indexOfFirstDollerSignAdjusted);
                 auto allAnnotations = StringExtenstions::Split(annotations,',');
 
                 for (auto annotation : allAnnotations)
                 {
-                    if (annotation == "id")
-                        definition.isID == true;
-                    if (annotation == "noninline")
-                        definition.IsInline == false;
-                    if (annotation == "relation")
-                        definition.isRelation == true;  
+                    if (StringExtenstions::Compare(annotation,"id"))
+                        definition.isID = true;
+                    if (StringExtenstions::Compare(annotation, "noninline"))
+                        definition.IsInline = false;
+                    if (StringExtenstions::Compare(annotation, "relation"))
+                        definition.isRelation = true;  
                 }
 
-                line = line.substr(nextIndexOfDollerSign + 1);
+                line = line.substr(indexOfDollerSignEnd + 1);
             }
 
             auto indexOfColumnTypeStart = line.find_first_of('<');
             auto indexOfColumnTypeEnd = line.find_first_of('>');
-
             if (indexOfColumnTypeStart != std::string::npos)
             {
                 auto indexOfColumnTypeStartAdjusted = indexOfColumnTypeStart + 1;
+                auto name = line.substr(0, indexOfColumnTypeStart);
                 auto columnType = line.substr(indexOfColumnTypeStartAdjusted, indexOfColumnTypeEnd - indexOfColumnTypeStartAdjusted);
 
                 if (columnType[0] == 'u')
@@ -234,7 +231,7 @@ DBDefinition DatabaseDefinition::Read()
                     definition.size = std::atoi(columnType.c_str());
                 }
 
-                line = line.substr(indexOfColumnTypeEnd + 1);
+                definition.name = name;
             }
 
             auto indexOfEnumLengthStart = line.find_first_of('[');
@@ -246,19 +243,25 @@ DBDefinition DatabaseDefinition::Read()
                 auto enumLengthString = line.substr(indexOfEnumLengthStartAdjusted, indexOfEnumLengthEnd - indexOfEnumLengthStartAdjusted);
 
                 definition.arrLength = std::atoi(enumLengthString.c_str());
-
-                line = line.substr(indexOfEnumLengthEnd + 1);
             }
 
             auto indexOfCommentStart = line.find_first_of('//');
-
             if (indexOfCommentStart != std::string::npos)
             {
                 auto indexOfCommentStartAdjusted = indexOfCommentStart + 1;
                 definition.comment = line.substr(indexOfCommentStartAdjusted);
             }
 
-            definition.name = line;
+            auto indexOfNameStart = 0;
+            auto indexOfNameEnd = line.size();  
+            if (indexOfCommentStart != std::string::npos)
+                indexOfNameEnd = indexOfCommentStart;
+            if (indexOfEnumLengthStart != std::string::npos)
+                indexOfNameEnd = indexOfEnumLengthStart;
+            if (indexOfColumnTypeStart != std::string::npos)
+                indexOfNameEnd = indexOfColumnTypeStart;
+
+            definition.name = line.substr(indexOfNameStart, indexOfNameEnd);
 
             definitions.push_back(definition);
 
