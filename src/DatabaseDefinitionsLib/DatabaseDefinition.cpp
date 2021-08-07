@@ -75,6 +75,7 @@ DBDefinition DatabaseDefinition::Read()
 
             columnDefinition.foreignTable = foreignKeyComponents[0];
             columnDefinition.foreignColumn = foreignKeyComponents[1];
+            columnDefinition.hasForeignKey = true;
         }
 
         auto name = std::string("Nameless Column > ").append(std::to_string(lineNumber));
