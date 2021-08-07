@@ -22,6 +22,17 @@ public:
         build = std::atoi(buildVersionElements[3].c_str());
     }
 
+    bool operator==(const Build& rhs) {
+        return std::tie(_expansion, _major, _minor, build) == std::tie(rhs._expansion, rhs._major, rhs._minor, rhs.build); 
+    }
+
+    bool operator<(const Build& rhs) {
+        return std::tie(_expansion, _major, _minor, build) < std::tie(rhs._expansion, rhs._major, rhs._minor, rhs.build);
+    }
+
+    bool operator>(const Build& rhs) {
+        return std::tie(_expansion, _major, _minor, build) > std::tie(rhs._expansion, rhs._major, rhs._minor, rhs.build);
+    }
 };
 
 class BuildRange
@@ -31,6 +42,13 @@ private:
     Build _maxBuild;
 public:
     BuildRange(Build minBuild, Build maxBuild) : _minBuild(minBuild), _maxBuild(_maxBuild) {}
+
+    bool Contains(Build& build)
+    {
+        if (build > _minBuild && build < _maxBuild)
+            return true;
+        return false;
+    }
 };
 
 struct ColumnDefinition
@@ -38,6 +56,7 @@ struct ColumnDefinition
     std::string type;
     std::string foreignTable;
     std::string foreignColumn;
+    bool hasForeignKey;
     bool verified;
     std::string comment;
 };
