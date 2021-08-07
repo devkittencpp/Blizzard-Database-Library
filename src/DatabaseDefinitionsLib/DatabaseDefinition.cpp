@@ -155,7 +155,7 @@ DBDefinition DatabaseDefinition::Read()
 
         if (containsBuildToken)
         {
-            auto buildTokenSize = BUILD_TOKEN.size() - 1;
+            auto buildTokenSize = BUILD_TOKEN.size();
             auto buildsLine = line.substr(buildTokenSize);
             auto linkedBuilds = StringExtenstions::Split(buildsLine, ',');
 
@@ -257,6 +257,18 @@ DBDefinition DatabaseDefinition::Read()
             }
 
             definition.name = line;
+
+            if (lines.size() == (index + 1))
+            {
+                auto versionDefinition = VersionDefinitions();
+                versionDefinition.builds = builds;
+                versionDefinition.buildRanges = buildRanges;
+                versionDefinition.layoutHashes = layoutHashes;
+                versionDefinition.definitions = definitions;
+                versionDefinition.comment = comment;
+
+                versionDefinitions.push_back(versionDefinition);
+            }
         }
 
         index++;
