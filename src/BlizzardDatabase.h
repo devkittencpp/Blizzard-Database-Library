@@ -8,6 +8,8 @@
 #include <DatabaseDefinition.h>
 #include <DatabaseBuilder.h>
 #include <Shared.h>
+#include <SQLiteCpp/SQLiteCpp.h>
+#include <sstream>
 
 class BlizzardDatabase
 {
@@ -19,4 +21,5 @@ public:
 	BlizzardDatabase(std::string databaseCollectionDirectory, std::string databaseDefinitionDirectory, std::string databaseSqlDirectory);
 
 	DBCTable ReadTable(std::string tableName);
+	void CreateDatabase();
 };

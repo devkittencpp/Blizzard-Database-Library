@@ -2,6 +2,7 @@
 #include<iostream>
 #include<string>
 #include<DbcTable.h>
+#include <filesystem>
 
 int main(int argc, char* argv[])
 {
@@ -44,8 +45,9 @@ int main(int argc, char* argv[])
     }
     
     auto blizzardDatabase = BlizzardDatabase(dbcFileDirectory, dbdFileDirectory, dbdFileDirectory);
-
     auto table = blizzardDatabase.ReadTable("map");
+
+    blizzardDatabase.CreateDatabase();
 
     return 0;
 }

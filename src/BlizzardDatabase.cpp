@@ -10,9 +10,9 @@ DBCTable BlizzardDatabase::ReadTable(std::string tableName)
 {
     auto build = Build("9.1.0.38549");
 
-    auto absoluteFilePathOfDatabaseTable = _databaseFilesLocation.append("\\").append(tableName).append(".db2");
-    auto absoluteFilePathOfDatabaseTableDefinition = _databaseDefinitionFilesLocation.append("\\").append(tableName).append(".dbd");
-    auto absoluteFilePathOfSqlGeneration = _databaseSqlDirectory.append("\\").append(tableName).append(".sql");
+    auto absoluteFilePathOfDatabaseTable = _databaseFilesLocation + "\\" + tableName +".db2";
+    auto absoluteFilePathOfDatabaseTableDefinition = _databaseDefinitionFilesLocation + "\\" + tableName+".dbd";
+    auto absoluteFilePathOfSqlGeneration = _databaseSqlDirectory + "\\sql\\" + tableName+".sql";
 
     auto databaseDefinition = DatabaseDefinition(absoluteFilePathOfDatabaseTableDefinition);
     auto tableDefinition = databaseDefinition.Read();
@@ -32,7 +32,7 @@ DBCTable BlizzardDatabase::ReadTable(std::string tableName)
         auto reader = WDC3Reader(fileStream);
     }
 
-    std::ofstream sqlFileStream;
+    std::fstream sqlFileStream;
     sqlFileStream.open(absoluteFilePathOfSqlGeneration, std::ifstream::out);
     if (sqlFileStream.is_open())
         std::cout <<"[OPENED] =>" << absoluteFilePathOfSqlGeneration  << std::endl;
@@ -43,4 +43,44 @@ DBCTable BlizzardDatabase::ReadTable(std::string tableName)
     fileStream.close();
 
     return DBCTable();
+}
+
+void BlizzardDatabase::CreateDatabase()
+{
+    auto build = Build("9.1.0.38549");
+    auto absoluteFilePathOfSqlDatabaseGeneration = _databaseSqlDirectory + "\\sql\\database.sql";
+
+    std::fstream databaseFile;
+    databaseFile.open(absoluteFilePathOfSqlDatabaseGeneration, std::ifstream::out | std::ifstream::in);
+
+    for (const auto& entry : std::filesystem::directory_iterator(_databaseDefinitionFilesLocation))
+    {
+        std::cout << entry.path().filename().replace_extension("").generic_string() << std::endl;
+
+        if (!entry.path().has_extension())
+            continue;
+
+        auto fileName = entry.path().filename().replace_extension("").generic_string();
+        auto absoluteFilePathOfDatabaseTable = _databaseFilesLocation + "\\" + fileName + ".db2";
+        auto absoluteFilePathOfDatabaseTableDefinition = _databaseDefinitionFilesLocation + "\\" + fileName + ".dbd";
+
+        auto databaseDefinition = DatabaseDefinition(absoluteFilePathOfDatabaseTableDefinition);
+        auto tableDefinition = databaseDefinition.Read();
+
+        auto tableBuilder = DatabaseBuilder(tableDefinition, build);
+
+        std::ifstream fileStream;
+        fileStream.open(absoluteFilePathOfDatabaseTable, std::ifstream::binary);
+
+        auto streamReader = StreamReader(fileStream);
+        auto fileFormatIdentifier = streamReader.ReadString(4);
+
+        std::cout << "File Header:" << fileFormatIdentifier << std::endl;
+      
+        tableBuilder.ConstructTable(databaseFile, fileName);
+
+        fileStream.close();
+    }
+
+    databaseFile.close();
 }
