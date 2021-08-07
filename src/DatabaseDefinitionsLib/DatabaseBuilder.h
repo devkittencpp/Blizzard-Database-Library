@@ -16,5 +16,5 @@ private:
 	DBDefinition& _definitions;
 public:
 	DatabaseBuilder(DBDefinition& fileDefinitions, Build& build);
-	void ConstructTable(std::ofstream& fileStream, std::string& tableName);
+	void ConstructTable(std::fstream& fileStream, std::string& tableName);
 };
