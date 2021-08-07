@@ -15,11 +15,18 @@ class WDC3Reader
 private:
     const int _headerSize = 72;
     const unsigned int WDC3FmtSig = 0x33434457;
-
     StreamReader _streamReader;
 
-    std::map<int,int> _copyData;
 public:
+    WDC3Header Header;
+
+    std::vector<FieldMeta> Meta;
+    std::vector<ColumnMetaData> ColumnMeta;
+    std::map<int, std::vector<Int32>> PalletData;
+    std::map<int, std::map<int, Int32>> CommonData;
+    std::map<int, int> CopyData;
+    std::map<long, std::string> StringTable;
+
     WDC3Reader(std::ifstream& inputStream);
 private:
     bool MemoryEmpty(char* data, size_t length);

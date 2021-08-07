@@ -18,63 +18,61 @@ WDC3Reader::WDC3Reader(std::ifstream& inputStream) : _streamReader(inputStream)
         return;
     }
 
-    auto header = _streamReader.Read<WDC3HeaderData>();
-    if (header.sectionsCount == 0 || header.RecordsCount == 0)
+    Header = _streamReader.Read<WDC3Header>();
+
+    if (Header.sectionsCount == 0 || Header.RecordsCount == 0)
         return;
 
-    auto sections = _streamReader.ReadArray<WDC3SectionData>(header.sectionsCount);
-    auto metaData = _streamReader.ReadArray<FieldMetaData>(header.FieldsCount);
-    auto columnData = _streamReader.ReadArray<ColumnMetaData>(header.FieldsCount);
-   
-    auto palletData = std::map<int,std::vector<Int32>>();
-    for (int i = 0; i < columnData.size(); i++)
+    auto sections = _streamReader.ReadArray<WDC3Section>(Header.sectionsCount);
+    Meta = _streamReader.ReadArray<FieldMeta>(Header.FieldsCount);
+    ColumnMeta = _streamReader.ReadArray<ColumnMetaData>(Header.FieldsCount);
+  
+    PalletData = std::map<int,std::vector<Int32>>();
+    for (int i = 0; i < ColumnMeta.size(); i++)
     {
-        if (columnData[i].CompressionType == CompressionType::Pallet || columnData[i].CompressionType == CompressionType::PalletArray)
+        if (ColumnMeta[i].CompressionType == CompressionType::Pallet || ColumnMeta[i].CompressionType == CompressionType::PalletArray)
         {
-            auto length = columnData[i].AdditionalDataSize / sizeof(int);
+            auto length = ColumnMeta[i].AdditionalDataSize / sizeof(int);
             auto pallet = _streamReader.ReadArray<Int32>(length); 
-            palletData.emplace(i, pallet);
+            PalletData.emplace(i, pallet);
         }
     }
 
     //-- not yet optimised --
-    auto commonData = std::map<int, std::map<int, Int32>>();
-    for (int i = 0; i < columnData.size(); i++)
+    CommonData = std::map<int, std::map<int, Int32>>();
+    for (int i = 0; i < CommonData.size(); i++)
     {
-        if (columnData[i].CompressionType == CompressionType::Common)
+        if (ColumnMeta[i].CompressionType == CompressionType::Common)
         {
-            commonData[i] = std::map<int, Int32>();
-            auto entires =  columnData[i].AdditionalDataSize / 8;
+            CommonData[i] = std::map<int, Int32>();
+            auto entires = ColumnMeta[i].AdditionalDataSize / 8;
             for (int j = 0; j < entires; j++)
             {
-                auto startOfList = reinterpret_cast<char*>(&commonData[i][j]);
+                auto startOfList = reinterpret_cast<char*>(&CommonData[i][j]);
                 inputStream.read(startOfList, length * sizeof(int));
             } 
         }
     } 
 
-    _copyData = std::map<int,int>();
-    auto stringTable = std::map<long, std::string>();
-
+   
     auto previousStringTableSize = 0, previousRecordCount = 0;
     auto recordSize = 0;
-
     std::unique_ptr<char[]> recordDataBlock = nullptr;
 
     for (auto& section : sections)
     {       
         _streamReader.Jump(section.FileOffset);
 
-        if((header.Flags & DB2Flags::Sparse) != header.Flags)
+        if((Header.Flags & DB2Flags::Sparse) != Header.Flags)
         {
-            recordSize = section.NumRecords * header.RecordSize;
+            recordSize = section.NumRecords * Header.RecordSize;
             recordDataBlock = _streamReader.ReadBlock(recordSize);
 
             for(auto i = 0 ; i < section.StringTableSize;)
             {
                 auto lastPosition = _streamReader.Position(); //56184
                 auto string = _streamReader.ReadString();
-                stringTable[i+previousStringTableSize] = string;
+                StringTable[i+previousStringTableSize] = string;
 
                 i += _streamReader.Position() - lastPosition;
 
@@ -110,7 +108,7 @@ WDC3Reader::WDC3Reader(std::ifstream& inputStream) : _streamReader(inputStream)
                 int index = _streamReader.Read<int>();
                 int value = _streamReader.Read<int>();
 
-                 _copyData[index] = value;
+                CopyData[index] = value;
             }              
         }
 
@@ -118,7 +116,7 @@ WDC3Reader::WDC3Reader(std::ifstream& inputStream) : _streamReader(inputStream)
         if (section.OffsetMapIDCount > 0)
         {
             // HACK unittestsparse is malformed and has sparseIndexData first
-            if (header.TableHash == 145293629)
+            if (Header.TableHash == 145293629)
             {
                 auto streamPosition = _streamReader.Position();
                 streamPosition += (4 * section.OffsetMapIDCount);
@@ -162,7 +160,7 @@ WDC3Reader::WDC3Reader(std::ifstream& inputStream) : _streamReader(inputStream)
             std::istream stream(&recordMemoryBuffer);
             auto streamReader = StreamReader(stream);
 
-            if ((header.Flags & DB2Flags::Sparse) == header.Flags)
+            if ((Header.Flags & DB2Flags::Sparse) == Header.Flags)
             {
                 streamReader.Jump(0);
                 position += sparseDataEntries[i].Size * 8;

@@ -29,7 +29,7 @@ enum class CompressionType : int
 
 
 #pragma pack(push,2)
-struct WDC3HeaderData
+struct WDC3Header
 {
     int RecordsCount;
     int FieldsCount;
@@ -57,7 +57,7 @@ struct SparseEntry
     unsigned short Size;
 };
 
-struct WDC3SectionData
+struct WDC3Section
 {
     unsigned long long TactKeyLookup;
     int FileOffset;
@@ -100,7 +100,7 @@ union Int64
     char _rawbytes[8];
 };
 
-struct FieldMetaData
+struct FieldMeta
 {
     short Bits;
     short Offset;
@@ -143,28 +143,5 @@ struct ColumnMetaData
     ColumnCompressionData compressionData;
 };
 
-union ColumnMeta
-{
-    ColumnMetaData HeaderData;
-    char rawBytes[sizeof(ColumnMetaData)];
-};
-
-union FieldMeta
-{
-    FieldMetaData HeaderData;
-    char rawBytes[sizeof(FieldMetaData)];
-};
-
-union WDC3Header
-{
-    WDC3HeaderData HeaderData;
-    char rawBytes[sizeof(WDC3HeaderData)];
-};
-
-union WDC3Section
-{
-    WDC3SectionData SectionData;
-    char rawBytes[sizeof(WDC3SectionData)];
-};
 
 #pragma pack(pop)
