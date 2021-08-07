@@ -123,9 +123,7 @@ DBDefinition DatabaseDefinition::Read()
         auto line = lines[index];
 
         if (line.empty())
-        {
-            std::cout << "Adding at Line " << index << std::endl;
-
+        {  
             auto versionDefinition = VersionDefinitions();
             versionDefinition.builds = builds;
             versionDefinition.buildRanges = buildRanges;
@@ -262,6 +260,8 @@ DBDefinition DatabaseDefinition::Read()
 
             definition.name = line;
 
+            definitions.push_back(definition);
+
             if (lines.size() == (index + 1))
             {
                 auto versionDefinition = VersionDefinitions();
@@ -272,7 +272,7 @@ DBDefinition DatabaseDefinition::Read()
                 versionDefinition.comment = comment;
 
                 versionDefinitions.push_back(versionDefinition);
-            }
+            }       
         }
 
         index++;
