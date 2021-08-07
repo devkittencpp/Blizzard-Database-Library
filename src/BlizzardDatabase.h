@@ -6,15 +6,17 @@
 #include "DbcTable.h"
 #include "WDC3Reader.h"
 #include <DatabaseDefinition.h>
+#include <DatabaseBuilder.h>
 #include <Shared.h>
 
 class BlizzardDatabase
 {
 private:
 	std::string _databaseFilesLocation;
+	std::string _databaseSqlDirectory;
 	std::string _databaseDefinitionFilesLocation;
 public:
-	BlizzardDatabase(std::string databaseCollectionDirectory, std::string databaseDefinitionDirectory);
+	BlizzardDatabase(std::string databaseCollectionDirectory, std::string databaseDefinitionDirectory, std::string databaseSqlDirectory);
 
 	DBCTable ReadTable(std::string tableName);
 };

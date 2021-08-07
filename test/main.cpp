@@ -43,7 +43,7 @@ int main(int argc, char* argv[])
         std::cout << "Expected Argument -DDP <Path>" << std::endl;
     }
     
-    auto blizzardDatabase = BlizzardDatabase(dbcFileDirectory, dbdFileDirectory);
+    auto blizzardDatabase = BlizzardDatabase(dbcFileDirectory, dbdFileDirectory, dbdFileDirectory);
 
     auto table = blizzardDatabase.ReadTable("map");
 
