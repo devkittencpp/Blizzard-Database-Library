@@ -9,6 +9,7 @@
 #include<StreamReader.h>
 #include<Types.h>
 #include<WDC3Row.h>
+#include<FileStructures.h>
 
 class WDC3Reader
 {
@@ -20,6 +21,7 @@ private:
 public:
     WDC3Header Header;
 
+    std::vector<WDC3Section> Sections;
     std::vector<FieldMeta> Meta;
     std::vector<ColumnMetaData> ColumnMeta;
     std::map<int, std::vector<Int32>> PalletData;
@@ -28,6 +30,7 @@ public:
     std::map<long, std::string> StringTable;
 
     WDC3Reader(std::ifstream& inputStream);
+    void ReadRows(VersionDefinition& versionDefinition);
 private:
     bool MemoryEmpty(char* data, size_t length);
 };

@@ -54,25 +54,29 @@ WDC3Reader::WDC3Reader(std::ifstream& inputStream) : _streamReader(inputStream)
         }
     } 
 
-   
-    auto previousStringTableSize = 0, previousRecordCount = 0;
+}
+
+void WDC3Reader::ReadRows(VersionDefinition& versionDefinition)
+{
+    auto previousStringTableSize = 0;
+    auto previousRecordCount = 0;
     auto recordSize = 0;
     std::unique_ptr<char[]> recordDataBlock = nullptr;
 
-    for (auto& section : sections)
-    {       
+    for (auto& section : Sections)
+    {
         _streamReader.Jump(section.FileOffset);
 
-        if((Header.Flags & DB2Flags::Sparse) != Header.Flags)
+        if ((Header.Flags & DB2Flags::Sparse) != Header.Flags)
         {
             recordSize = section.NumRecords * Header.RecordSize;
             recordDataBlock = _streamReader.ReadBlock(recordSize);
 
-            for(auto i = 0 ; i < section.StringTableSize;)
+            for (auto i = 0; i < section.StringTableSize;)
             {
                 auto lastPosition = _streamReader.Position(); //56184
                 auto string = _streamReader.ReadString();
-                StringTable[i+previousStringTableSize] = string;
+                StringTable[i + previousStringTableSize] = string;
 
                 i += _streamReader.Position() - lastPosition;
 
@@ -87,29 +91,29 @@ WDC3Reader::WDC3Reader(std::ifstream& inputStream) : _streamReader(inputStream)
             recordDataBlock = _streamReader.ReadBlock(recordSize);
 
             if (_streamReader.Position() != section.OffsetRecordsEndOffset)
-                std::cout << "Over/Under Read Section" << std::endl;     
-        } 
+                std::cout << "Over/Under Read Section" << std::endl;
+        }
 
         if (section.TactKeyLookup != 0 && MemoryEmpty(recordDataBlock.get(), recordSize))
         {
             previousRecordCount += section.NumRecords;
             continue;
         }
- 
+
         auto indexData = _streamReader.ReadArray<int>(section.IndexDataSize);
-        if(indexData.size() > 0 ){
+        if (indexData.size() > 0) {
             //fill index 0-X based on records
         }
-           
-        if(section.CopyTableCount > 0)
-        {   
+
+        if (section.CopyTableCount > 0)
+        {
             for (int i = 0; i < section.CopyTableCount; i++)
             {
                 int index = _streamReader.Read<int>();
                 int value = _streamReader.Read<int>();
 
                 CopyData[index] = value;
-            }              
+            }
         }
 
         auto sparseDataEntries = std::vector<SparseEntry>();
@@ -122,33 +126,33 @@ WDC3Reader::WDC3Reader(std::ifstream& inputStream) : _streamReader(inputStream)
                 streamPosition += (4 * section.OffsetMapIDCount);
                 _streamReader.Jump(streamPosition);
             }
-           
+
             sparseDataEntries = _streamReader.ReadArray<SparseEntry>(section.OffsetMapIDCount);
         }
 
         if (section.ParentLookupDataSize > 0)
-        {         
-           //var oldPosition = reader.BaseStream.Position;
-           //refData.NumRecords = reader.ReadInt32();
-           //refData.MinId = reader.ReadInt32();
-           //refData.MaxId = reader.ReadInt32();
-           //
-           //var entries = reader.ReadArray<ReferenceEntry>(refData.NumRecords);
-           //for (int i = 0; i < entries.Length; i++)
-           //{
-           //    refData.Entries[entries[i].Index] = entries[i].Id;
-           //}
-            
+        {
+            //var oldPosition = reader.BaseStream.Position;
+            //refData.NumRecords = reader.ReadInt32();
+            //refData.MinId = reader.ReadInt32();
+            //refData.MaxId = reader.ReadInt32();
+            //
+            //var entries = reader.ReadArray<ReferenceEntry>(refData.NumRecords);
+            //for (int i = 0; i < entries.Length; i++)
+            //{
+            //    refData.Entries[entries[i].Index] = entries[i].Id;
+            //}
+
             std::cout << "Has Lookup Data" << std::endl;
         }
 
         if (section.OffsetMapIDCount > 0)
         {
             auto sparseIndexData = _streamReader.ReadArray<int>(section.OffsetMapIDCount);
-            
+
             if (section.IndexDataSize > 0 && indexData.size() != sparseIndexData.size())
                 std::cout << "m_indexData.Length != sparseIndexData.Length" << std::endl;
-            
+
             indexData = sparseIndexData;
         }
 
@@ -156,9 +160,11 @@ WDC3Reader::WDC3Reader(std::ifstream& inputStream) : _streamReader(inputStream)
         auto position = 0;
         auto recordMemoryBuffer = MemoryBuffer(recordDataBlock.get(), recordDataBlock.get() + recordSize);
         for (int i = 0; i < section.NumRecords; i++)
-        {      
+        {
             std::istream stream(&recordMemoryBuffer);
             auto streamReader = StreamReader(stream);
+
+            auto record = streamReader.ReadBlock(recordSize);
 
             if ((Header.Flags & DB2Flags::Sparse) == Header.Flags)
             {
@@ -168,9 +174,10 @@ WDC3Reader::WDC3Reader(std::ifstream& inputStream) : _streamReader(inputStream)
             else
             {
                 std::cout << "Not Sparse" << std::endl;
-
                 streamReader.Jump(i * recordSize);
             }
+
+
         }
 
         auto row = WDC3Row();
