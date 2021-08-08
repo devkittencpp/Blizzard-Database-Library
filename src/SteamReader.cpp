@@ -15,7 +15,7 @@ std::string StreamReader::ReadString()
 std::string StreamReader::ReadString(std::size_t length)
 {
     std::string string;
-    _underlyingStream.getline(&string[0], 5);
+    _underlyingStream.getline(&string[0], length + 1);
     return string;
 }
 
