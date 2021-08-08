@@ -31,7 +31,7 @@ public:
 
     static bool Compare(const std::string& lhs, const std::string& rhs)
     {
-        auto result = lhs.compare(rhs);
+        auto result = strcmp(lhs.c_str(), rhs.c_str());
 
         if (result == 0)
             return true;
