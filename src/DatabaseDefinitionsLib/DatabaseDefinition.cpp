@@ -288,3 +288,37 @@ DBDefinition DatabaseDefinition::Read()
 
     return databaseDefinition;
 }
+
+bool DatabaseDefinition::For(Build& build, VersionDefinition& definition)
+{
+    auto definitions = Read();
+
+    auto columnDefinitions = definitions.columnDefinitions;
+    auto tableVersionDefintions = definitions.versionDefinitions;
+
+    auto versionFound = false;
+    definition = VersionDefinition();
+    definition.columnDefinitions = columnDefinitions;
+
+    for (auto& versionDefiniton : tableVersionDefintions)
+    {
+        auto builds = versionDefiniton.builds;
+        if (std::find(builds.begin(), builds.end(), build) != builds.end())
+        {
+            definition.versionDefinitions = versionDefiniton;
+            return true;
+        }
+
+        auto buildRanges = versionDefiniton.buildRanges;
+        for (auto& buildRange : buildRanges)
+        {
+            if (buildRange.Contains(build))
+            {
+                definition.versionDefinitions = versionDefiniton;
+                return true;
+            }
+        }
+    }
+
+    return false;  
+}

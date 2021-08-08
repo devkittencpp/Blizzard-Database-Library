@@ -17,4 +17,5 @@ private:
 public:
 	DatabaseDefinition(std::string databaseDefinitionsDirectory);
 	DBDefinition Read();
+	bool For(Build& build, VersionDefinition& definition);
 };
