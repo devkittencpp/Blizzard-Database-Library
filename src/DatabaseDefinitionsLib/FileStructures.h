@@ -88,3 +88,10 @@ struct DBDefinition
     std::vector<VersionDefinitions> versionDefinitions;
 };
 
+struct VersionDefinition
+{
+    std::map<std::string, ColumnDefinition> columnDefinitions;
+    VersionDefinitions versionDefinitions;
+};
+
+
