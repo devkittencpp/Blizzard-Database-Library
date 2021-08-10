@@ -14,9 +14,8 @@ std::string StreamReader::ReadString()
 
 std::string StreamReader::ReadString(std::size_t length)
 {
-    std::string string;
-    _underlyingStream.getline(&string[0], length + 1);
-    return string;
+    auto data = ReadBlock(length);    
+    return std::string(data.get(),length);
 }
 
 std::unique_ptr<char[]> StreamReader::ReadBlock(std::size_t length)
