@@ -12,12 +12,13 @@ DBCTable BlizzardDatabase::ReadTable(std::string tableName)
 
     auto absoluteFilePathOfDatabaseTable = _databaseFilesLocation + "\\" + tableName +".db2";
     auto absoluteFilePathOfDatabaseTableDefinition = _databaseDefinitionFilesLocation + "\\" + tableName+".dbd";
-    auto absoluteFilePathOfSqlGeneration = _databaseSqlDirectory + "\\sql\\" + tableName+".sql";
 
     auto databaseDefinition = DatabaseDefinition(absoluteFilePathOfDatabaseTableDefinition);
-    auto tableDefinition = databaseDefinition.Read();
+    auto tableDefinition = VersionDefinition();
+    auto tableFound = databaseDefinition.For(build, tableDefinition);
 
-    auto tableBuilder = DatabaseBuilder(tableDefinition, build);
+    if(tableFound == false)
+        std::cout << "Verion Not found" << std::endl;
 
     std::ifstream fileStream;
     fileStream.open(absoluteFilePathOfDatabaseTable, std::ifstream::binary);
@@ -25,21 +26,17 @@ DBCTable BlizzardDatabase::ReadTable(std::string tableName)
     auto streamReader = StreamReader(fileStream);
     auto fileFormatIdentifier = streamReader.ReadString(4);
 
-    std::cout << "File Header:" << fileFormatIdentifier << std::endl;
+    if(!fileStream.is_open())
+        std::cout << "FileClosed?" << std::endl;
 
-    if (fileFormatIdentifier == "WDC3")
+    std::cout << "File Header Format: " << fileFormatIdentifier << std::endl;
+
+    if(StringExtenstions::Compare(fileFormatIdentifier,std::string("WDC3")))
     {
-        auto reader = WDC3Reader(fileStream);
+        auto reader = WDC3Reader(streamReader);
+        reader.ReadRows(tableDefinition);
     }
 
-    std::fstream sqlFileStream;
-    sqlFileStream.open(absoluteFilePathOfSqlGeneration, std::ifstream::out);
-    if (sqlFileStream.is_open())
-        std::cout <<"[OPENED] =>" << absoluteFilePathOfSqlGeneration  << std::endl;
-
-    tableBuilder.ConstructTable(sqlFileStream, tableName);
-
-    sqlFileStream.close();
     fileStream.close();
 
     return DBCTable();

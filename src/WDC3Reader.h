@@ -29,7 +29,7 @@ public:
     std::map<int, int> CopyData;
     std::map<long, std::string> StringTable;
 
-    WDC3Reader(std::ifstream& inputStream);
+    WDC3Reader(StreamReader& streamReader);
     void ReadRows(VersionDefinition& versionDefinition);
 private:
     bool MemoryEmpty(char* data, size_t length);

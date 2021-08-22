@@ -2,7 +2,9 @@
 #include <iostream>
 #include <vector>
 #include <string>
-
+#include <sstream>
+#include <iomanip>
+#include <Types.h>
 
 struct MemoryBuffer : std::streambuf
 {
@@ -11,6 +13,81 @@ public:
     {
         this->setg(firstElement, firstElement, LastElement);
     }
+};
+
+class BitReader
+{
+    std::unique_ptr<char[]>& _dataStart;
+public:
+    int Position;
+    int DataLength;
+    int Offset;
+    BitReader(std::unique_ptr<char[]>& dataStart, unsigned int dataLength) : _dataStart(dataStart), DataLength(dataLength), Position(0), Offset(0)
+    {
+      
+    }
+
+    std::string hexStr(char* data, int len)
+    {
+        char const hex_chars[16] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
+
+       std::stringstream ss;
+       for (int i = 0; i < len; ++i)
+       {
+           char const byte = data[i];
+
+           ss << hex_chars[(byte & 0xF0) >> 4];
+           ss << hex_chars[(byte & 0x0F) >> 0];
+       }
+
+        return ss.str();
+    }
+
+    std::string DumpBlock()
+    {
+        return hexStr(_dataStart.get(), DataLength);
+    }
+
+    unsigned int ReadUint32(int numberOfBits)
+    {
+        auto index = Offset + (int)(Position >> (int)3);
+        auto p1 = (32 - numberOfBits - (Position & 7));
+        auto p2 = (32 - numberOfBits);
+
+        auto integerPointer = reinterpret_cast<unsigned int*>(_dataStart.get());
+        auto result = ((integerPointer[index / 4]) << p1 >> p2);
+        Position += numberOfBits;
+        return result;
+    }
+
+    unsigned long long ReadUint64(int numberOfBits)
+    {
+        auto index = Offset + (int)(Position >> (int)3);
+        auto p1 = (64 - numberOfBits - (Position & 7));
+        auto p2 = (64 - numberOfBits);
+
+        auto integerPointer = reinterpret_cast<unsigned long*>(_dataStart.get());
+        auto result = ((integerPointer[index / 8]) << p1 >> p2);
+        Position += numberOfBits;
+        return result;
+    }
+
+    Int64 ReadValue64(int numberOfBits)
+    {
+        auto value = Int64();
+        value.ULongLong = ReadUint64(numberOfBits);
+        return value;
+    }
+
+    Int64 ReadSignedValue64(int numberOfBits)
+    {
+        auto value = Int64();
+        value.ULongLong = ReadUint64(numberOfBits);
+        auto signedShift = 1UL << (numberOfBits - 1);
+        value.ULongLong = (signedShift ^ value.ULongLong) - signedShift;
+        return value;
+    }
+
 };
 
 class StreamReader

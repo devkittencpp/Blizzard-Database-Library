@@ -1,6 +1,6 @@
 #include <WDC3Reader.h>
 
-WDC3Reader::WDC3Reader(std::ifstream& inputStream) : _streamReader(inputStream)
+WDC3Reader::WDC3Reader(StreamReader& streamReader) : _streamReader(streamReader)
 {
     auto length = _streamReader.Length();
     if(length < _headerSize)
@@ -23,7 +23,7 @@ WDC3Reader::WDC3Reader(std::ifstream& inputStream) : _streamReader(inputStream)
     if (Header.sectionsCount == 0 || Header.RecordsCount == 0)
         return;
 
-    auto sections = _streamReader.ReadArray<WDC3Section>(Header.sectionsCount);
+    Sections = _streamReader.ReadArray<WDC3Section>(Header.sectionsCount);
     Meta = _streamReader.ReadArray<FieldMeta>(Header.FieldsCount);
     ColumnMeta = _streamReader.ReadArray<ColumnMetaData>(Header.FieldsCount);
   
@@ -49,7 +49,7 @@ WDC3Reader::WDC3Reader(std::ifstream& inputStream) : _streamReader(inputStream)
             for (int j = 0; j < entires; j++)
             {
                 auto startOfList = reinterpret_cast<char*>(&CommonData[i][j]);
-                inputStream.read(startOfList, length * sizeof(int));
+                //_streamReader.ReadBlock(startOfList, length * sizeof(int));
             } 
         }
     } 
@@ -60,7 +60,7 @@ void WDC3Reader::ReadRows(VersionDefinition& versionDefinition)
 {
     auto previousStringTableSize = 0;
     auto previousRecordCount = 0;
-    auto recordSize = 0;
+    auto recordBlockSize = 0;
     std::unique_ptr<char[]> recordDataBlock = nullptr;
 
     for (auto& section : Sections)
@@ -69,8 +69,8 @@ void WDC3Reader::ReadRows(VersionDefinition& versionDefinition)
 
         if ((Header.Flags & DB2Flags::Sparse) != Header.Flags)
         {
-            recordSize = section.NumRecords * Header.RecordSize;
-            recordDataBlock = _streamReader.ReadBlock(recordSize);
+            recordBlockSize = section.NumRecords * Header.RecordSize;
+            recordDataBlock = _streamReader.ReadBlock(recordBlockSize);
 
             for (auto i = 0; i < section.StringTableSize;)
             {
@@ -87,14 +87,14 @@ void WDC3Reader::ReadRows(VersionDefinition& versionDefinition)
         }
         else
         {
-            recordSize = section.OffsetRecordsEndOffset - section.FileOffset;
-            recordDataBlock = _streamReader.ReadBlock(recordSize);
+            recordBlockSize = section.OffsetRecordsEndOffset - section.FileOffset;
+            recordDataBlock = _streamReader.ReadBlock(recordBlockSize);
 
             if (_streamReader.Position() != section.OffsetRecordsEndOffset)
                 std::cout << "Over/Under Read Section" << std::endl;
         }
 
-        if (section.TactKeyLookup != 0 && MemoryEmpty(recordDataBlock.get(), recordSize))
+        if (section.TactKeyLookup != 0 && MemoryEmpty(recordDataBlock.get(), recordBlockSize))
         {
             previousRecordCount += section.NumRecords;
             continue;
@@ -158,29 +158,92 @@ void WDC3Reader::ReadRows(VersionDefinition& versionDefinition)
 
         //Parsing Records
         auto position = 0;
-        auto recordMemoryBuffer = MemoryBuffer(recordDataBlock.get(), recordDataBlock.get() + recordSize);
+        auto recordSize = Header.RecordSize;
+
+        std::stringstream ss;
         for (int i = 0; i < section.NumRecords; i++)
         {
-            std::istream stream(&recordMemoryBuffer);
-            auto streamReader = StreamReader(stream);
-
-            auto record = streamReader.ReadBlock(recordSize);
-
+            auto bitReader = BitReader(recordDataBlock, recordBlockSize);
             if ((Header.Flags & DB2Flags::Sparse) == Header.Flags)
             {
-                streamReader.Jump(0);
-                position += sparseDataEntries[i].Size * 8;
+                //bitReader.Position = position;
+                //streamReader.Jump(0);
+                //position += sparseDataEntries[i].Size * 8;
             }
             else
             {
-                std::cout << "Not Sparse" << std::endl;
-                streamReader.Jump(i * recordSize);
+                bitReader.Offset = i * recordSize;
             }
+     
+            auto Id = section.IndexDataSize != 0 ? indexData[i] : -1;
+            auto columns = versionDefinition.columnDefinitions;
+            auto versionDefs = versionDefinition.versionDefinitions;
+            auto row = WDC3Row(Id, bitReader, StringTable);
+
+            for (int def = 1; def < versionDefs.definitions.size(); def++)
+            {
+                auto& const fieldMeta = Meta.at(def);
+                auto& const columnMeta = ColumnMeta.at(def);
 
 
+                //auto& const palletData = PalletData.at(def);
+                //auto& const commonData = CommonData.at(def);
+
+                auto column = versionDefs.definitions[def];
+                auto tablecolumn = columns.at(column.name);
+                auto type = tablecolumn.type;
+
+                if (columnMeta.CompressionType == CompressionType::None)
+                {
+                    if (StringExtenstions::Compare(type, "int"))
+                    {
+                        auto bitSize = 32 - fieldMeta.Bits;
+                        if (bitSize <= 0)
+                            bitSize = columnMeta.compressionData.Immediate.BitWidth;
+
+                        auto value = bitReader.ReadValue64(bitSize);
+
+                        ss << value.LongLong;
+                    }
+
+                    if (StringExtenstions::Compare(type, "float"))
+                    {
+                        auto arrayLength = column.arrLength;
+
+                        for (int i = 0; i < arrayLength; i++)
+                        {
+                            auto value = (float)bitReader.ReadUint32(32);
+                        }
+                    }
+
+                }
+
+                if (columnMeta.CompressionType == CompressionType::SignedImmediate)
+                {
+                    if (StringExtenstions::Compare(type, "int"))
+                    {
+                        auto bitSize = columnMeta.compressionData.Immediate.BitWidth;
+                        auto value = bitReader.ReadSignedValue64(bitSize);
+
+                        ss << value.LongLong;
+                    }
+                }
+
+
+                if (StringExtenstions::Compare(type, "string") || StringExtenstions::Compare(type, "locstring"))
+                {
+                    auto recordIndex = i + previousRecordCount;
+                    auto readerOffset = (recordIndex * recordSize) - (Header.RecordsCount * recordSize);
+                    auto offsetPosition = readerOffset + (bitReader.Position >> 3);
+                    auto lookupId = bitReader.ReadUint32(32);
+                    auto stringLookupIndex = offsetPosition + lookupId;
+                    auto lookup = StringTable.at(stringLookupIndex);
+                }
+            }
         }
 
-        auto row = WDC3Row();
+    
+        std::cout << ss.str() << std::endl;
 
         previousRecordCount += section.NumRecords;
     }

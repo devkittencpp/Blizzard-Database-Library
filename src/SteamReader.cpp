@@ -5,6 +5,8 @@ StreamReader::StreamReader(std::istream& stream) : _underlyingStream(stream)
 
 }
 
+
+
 std::string StreamReader::ReadString()
 {
    std::string string;
