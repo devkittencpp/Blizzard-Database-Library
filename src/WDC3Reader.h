@@ -8,7 +8,6 @@
 #include<sstream>
 #include<StreamReader.h>
 #include<Types.h>
-#include<WDC3Row.h>
 #include<FileStructures.h>
 
 class WDC3Reader

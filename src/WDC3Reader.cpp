@@ -178,8 +178,7 @@ void WDC3Reader::ReadRows(VersionDefinition& versionDefinition)
             auto Id = section.IndexDataSize != 0 ? indexData[i] : -1;
             auto columns = versionDefinition.columnDefinitions;
             auto versionDefs = versionDefinition.versionDefinitions;
-            auto row = WDC3Row(Id, bitReader, StringTable);
-
+         
             for (int def = 0; def < versionDefs.definitions.size()-1; def++)
             {          
                 auto fieldMeta = Meta.at(def);
@@ -200,12 +199,7 @@ void WDC3Reader::ReadRows(VersionDefinition& versionDefinition)
                 auto column = versionDefs.definitions[def+1];
                 auto tablecolumn = columns.at(column.name);
                 auto type = tablecolumn.type;
-
-                if (StringExtenstions::Compare(column.name, "MinimapIconScale"))
-                {
-                    int i = 0;
-                }
-            
+ 
                 if (StringExtenstions::Compare(type, "int"))
                 {
                     if (column.arrLength > 0)
