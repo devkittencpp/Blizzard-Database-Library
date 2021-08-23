@@ -56,22 +56,25 @@ WDC3Reader::WDC3Reader(StreamReader& streamReader) : _streamReader(streamReader)
 
 }
 
-void WDC3Reader::ReadRows(VersionDefinition& versionDefinition)
+std::vector<BlizzardDatabaseRow> WDC3Reader::ReadRows(VersionDefinition& versionDefinition)
 {
+
     auto previousStringTableSize = 0;
     auto previousRecordCount = 0;
     auto recordBlockSize = 0;
     std::unique_ptr<char[]> recordDataBlock = nullptr;
+    std::vector<BlizzardDatabaseRow> rows;
 
+    auto length = _streamReader.Length();
     for (auto& section : Sections)
-    {
+    {     
         _streamReader.Jump(section.FileOffset);
 
         if ((Header.Flags & DB2Flags::Sparse) != Header.Flags)
         {
             recordBlockSize = section.NumRecords * Header.RecordSize;
             recordDataBlock = _streamReader.ReadBlock(recordBlockSize);
-
+ 
             for (auto i = 0; i < section.StringTableSize;)
             {
                 auto lastPosition = _streamReader.Position(); //56184
@@ -80,7 +83,7 @@ void WDC3Reader::ReadRows(VersionDefinition& versionDefinition)
 
                 i += _streamReader.Position() - lastPosition;
 
-                std::cout << lastPosition << " " << i << " " << string << std::endl;
+               std::cout << lastPosition << " " << i << " " << string << std::endl;
             }
 
             previousStringTableSize += section.StringTableSize;
@@ -93,14 +96,16 @@ void WDC3Reader::ReadRows(VersionDefinition& versionDefinition)
             if (_streamReader.Position() != section.OffsetRecordsEndOffset)
                 std::cout << "Over/Under Read Section" << std::endl;
         }
+  
 
-        if (section.TactKeyLookup != 0 && MemoryEmpty(recordDataBlock.get(), recordBlockSize))
-        {
-            previousRecordCount += section.NumRecords;
-            continue;
-        }
+        //if (section.TactKeyLookup != 0 && MemoryEmpty(recordDataBlock.get(), recordBlockSize))
+        //{
+        //    previousRecordCount += section.NumRecords;
+        //    continue;
+        //}
 
-        auto indexData = _streamReader.ReadArray<int>(section.IndexDataSize);
+        auto indexData = _streamReader.ReadArray<int>(section.IndexDataSize / 4);
+    
         if (indexData.size() > 0) {
             //fill index 0-X based on records
         }
@@ -155,7 +160,8 @@ void WDC3Reader::ReadRows(VersionDefinition& versionDefinition)
 
             indexData = sparseIndexData;
         }
-
+        
+      
         //Parsing Records
         auto position = 0;
         auto recordSize = Header.RecordSize;
@@ -178,7 +184,8 @@ void WDC3Reader::ReadRows(VersionDefinition& versionDefinition)
             auto Id = section.IndexDataSize != 0 ? indexData[i] : -1;
             auto columns = versionDefinition.columnDefinitions;
             auto versionDefs = versionDefinition.versionDefinitions;
-         
+            auto row = BlizzardDatabaseRow();
+
             for (int def = 0; def < versionDefs.definitions.size()-1; def++)
             {          
                 auto fieldMeta = Meta.at(def);
@@ -199,7 +206,9 @@ void WDC3Reader::ReadRows(VersionDefinition& versionDefinition)
                 auto column = versionDefs.definitions[def+1];
                 auto tablecolumn = columns.at(column.name);
                 auto type = tablecolumn.type;
- 
+                auto columnValue = std::string();
+                row.Columns.emplace(column.name, "");
+
                 if (StringExtenstions::Compare(type, "int"))
                 {
                     if (column.arrLength > 0)
@@ -209,6 +218,7 @@ void WDC3Reader::ReadRows(VersionDefinition& versionDefinition)
                         if (value.size() >= 2)
                             std::cout << type << " " << (int)columnMeta.CompressionType << " " << column.name << " " << fieldMeta.Bits << " => " << value[0] << ":" << value[1] << std::endl;
 
+                      
                         continue;
                     }
 
@@ -226,7 +236,9 @@ void WDC3Reader::ReadRows(VersionDefinition& versionDefinition)
                     if (column.size == 32 && !column.isSigned)
                         value = GetFieldValue<unsigned int>(Id, bitReader, StringTable, fieldMeta, columnMeta, palletData, commonData);
                     
-                    std::cout << type << " " << (int)columnMeta.CompressionType << " " << column.name << " " << 8 << " => " << value << std::endl;
+
+                    row.Columns[column.name] = std::to_string(value);
+                   std::cout << type << " " << (int)columnMeta.CompressionType << " " << column.name << " " << 8 << " => " << value << std::endl;
                 }
 
                 if (StringExtenstions::Compare(type, "float"))
@@ -244,6 +256,7 @@ void WDC3Reader::ReadRows(VersionDefinition& versionDefinition)
                     {
                         auto value =  GetFieldValue<float>(Id, bitReader, StringTable, fieldMeta, columnMeta, palletData, commonData);
                         std::cout << type << " " << (int)columnMeta.CompressionType << " " << column.name << " " << 8 << " => " << value << std::endl;
+                        row.Columns[column.name] = std::to_string(value);
                     }    
                 }
 
@@ -255,10 +268,12 @@ void WDC3Reader::ReadRows(VersionDefinition& versionDefinition)
                     auto lookupId = bitReader.ReadUint32(32);
                     auto stringLookupIndex = offsetPosition + lookupId;
                     auto value = StringTable.at(stringLookupIndex);
-
+                    row.Columns[column.name] = value;
                     std::cout << type << " " << (int)columnMeta.CompressionType << " " << column.name << " " << fieldMeta.Bits << " => " << value << std::endl;
                 }
             }
+
+            rows.push_back(row);
         }
 
     
@@ -266,6 +281,8 @@ void WDC3Reader::ReadRows(VersionDefinition& versionDefinition)
 
         previousRecordCount += section.NumRecords;
     }
+
+    return rows;
 }
 
 bool WDC3Reader::MemoryEmpty(char* data, size_t length)

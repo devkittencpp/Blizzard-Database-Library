@@ -34,7 +34,7 @@ DBCTable BlizzardDatabase::ReadTable(std::string tableName)
     if(StringExtenstions::Compare(fileFormatIdentifier,std::string("WDC3")))
     {
         auto reader = WDC3Reader(streamReader);
-        reader.ReadRows(tableDefinition);
+        auto rows = reader.ReadRows(tableDefinition);
     }
 
     fileStream.close();
@@ -58,6 +58,10 @@ void BlizzardDatabase::CreateDatabase()
             continue;
 
         auto fileName = entry.path().filename().replace_extension("").generic_string();
+
+        if (!StringExtenstions::Compare(fileName, "Map"))
+            continue;
+
         auto absoluteFilePathOfDatabaseTable = _databaseFilesLocation + "\\" + fileName + ".db2";
         auto absoluteFilePathOfDatabaseTableDefinition = _databaseDefinitionFilesLocation + "\\" + fileName + ".dbd";
 
@@ -74,7 +78,20 @@ void BlizzardDatabase::CreateDatabase()
 
         std::cout << "File Header:" << fileFormatIdentifier << std::endl;
       
-        tableBuilder.ConstructTable(databaseFile, fileName);
+        auto tableVersionDefinition = VersionDefinition();
+        auto tableFound = databaseDefinition.For(build, tableVersionDefinition);
+
+        if (tableFound == false)
+            std::cout << "Verion Not found" << std::endl;
+
+        std::vector<BlizzardDatabaseRow> rows;
+        if (StringExtenstions::Compare(fileFormatIdentifier, std::string("WDC3")))
+        {
+            auto reader = WDC3Reader(streamReader);
+            rows = reader.ReadRows(tableVersionDefinition);
+        }
+
+        tableBuilder.ConstructTable(databaseFile, fileName, rows);
 
         fileStream.close();
     }

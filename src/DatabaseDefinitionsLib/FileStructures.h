@@ -4,6 +4,12 @@
 #include <vector>
 #include <Shared.h>
 
+struct BlizzardDatabaseRow
+{
+    std::map<std::string, std::string> Columns; //Column=>Value
+};
+
+
 class Build
 {
 private:

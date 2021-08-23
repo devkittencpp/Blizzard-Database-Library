@@ -29,7 +29,7 @@ public:
     std::map<long, std::string> StringTable;
 
     WDC3Reader(StreamReader& streamReader);
-    void ReadRows(VersionDefinition& versionDefinition);
+    std::vector<BlizzardDatabaseRow> ReadRows(VersionDefinition& versionDefinition);
 private:
     bool MemoryEmpty(char* data, size_t length);
 

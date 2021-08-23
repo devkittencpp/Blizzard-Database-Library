@@ -5,7 +5,7 @@ DatabaseBuilder::DatabaseBuilder(DBDefinition& fileDefinitions, Build& build): _
 	
 }
 
-void DatabaseBuilder::ConstructTable(std::fstream& fileStream, std::string& tableName)
+void DatabaseBuilder::ConstructTable(std::fstream& fileStream, std::string& tableName, std::vector<BlizzardDatabaseRow> rows)
 {
 	auto columnDefinitions = _definitions.columnDefinitions;
 	auto tableVersionDefintions = _definitions.versionDefinitions;
@@ -112,6 +112,71 @@ void DatabaseBuilder::ConstructTable(std::fstream& fileStream, std::string& tabl
 		index++;
 	}
 	stringWriter << ");" << std::endl << std::endl;
+
+	fileStream << stringWriter.str();
+
+	stringWriter.clear();
+	
+	for (auto& row : rows)
+	{	
+		stringWriter << "INSERT INTO " << tableName << " (";
+
+		auto index = 0;
+		for (auto& column : row.Columns)
+		{
+			auto columnName = column.first;
+
+			stringWriter << columnName;
+			if (index < row.Columns.size() - 1)
+				stringWriter << ",";
+		
+			index++;
+		}
+		stringWriter << ")" << std::endl;
+		stringWriter << "VALUES (";
+		index = 0;
+		for (auto& column : row.Columns)
+		{
+			auto columnDefinition = columnDefinitions.at(column.first);
+			auto columnType = std::string();
+
+			if (StringExtenstions::Compare(columnDefinition.type, "int"))
+				columnType = "INTEGER";
+			if (StringExtenstions::Compare(columnDefinition.type, "float"))
+				columnType = "REAL";
+			if (StringExtenstions::Compare(columnDefinition.type, "locstring"))
+				columnType = "TEXT";
+			if (StringExtenstions::Compare(columnDefinition.type, "string"))
+				columnType = "TEXT";
+
+			auto columnValue = column.second;
+
+			if (StringExtenstions::Compare(columnType, "TEXT"))
+			{
+				if (StringExtenstions::Compare(columnValue, ""))
+					stringWriter << "";
+				else
+					stringWriter << "\"" << columnValue << "\"";
+
+				if (index < row.Columns.size() - 1)
+					stringWriter << ",";						
+			}
+			else
+			{
+				if(StringExtenstions::Compare(columnValue, ""))
+					stringWriter << 0;
+				else
+					stringWriter << columnValue;
+
+				if (index < row.Columns.size() - 1)
+					stringWriter <<  ",";		
+			}
+
+			index++;
+		}
+
+		stringWriter << ");" << std::endl;
+	}
 
 	fileStream << stringWriter.str();
 }

@@ -131,4 +131,5 @@ public:
     void JumpStart();
     std::size_t Length();
     std::streampos Position();
+    bool Good();
 };

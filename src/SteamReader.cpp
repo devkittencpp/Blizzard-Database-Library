@@ -33,8 +33,14 @@ std::streampos StreamReader::Position()
   return _underlyingStream.tellg();
 }
 
+bool StreamReader::Good()
+{
+    return _underlyingStream.good();
+}
+
 void StreamReader::JumpEnd()
 {
+
     _underlyingStream.seekg(0,_underlyingStream.end);
 }
 
@@ -45,7 +51,7 @@ void StreamReader::JumpStart()
 
 void StreamReader::Jump(std::streampos position)
 {
-   _underlyingStream.seekg(position);
+   _underlyingStream.seekg(position, _underlyingStream.beg);
 }
 
 std::size_t StreamReader::Length()

@@ -45,9 +45,9 @@ int main(int argc, char* argv[])
     }
     
     auto blizzardDatabase = BlizzardDatabase(dbcFileDirectory, dbdFileDirectory, dbdFileDirectory);
-    auto table = blizzardDatabase.ReadTable("map");
+   // auto table = blizzardDatabase.ReadTable("map");
 
-    //blizzardDatabase.CreateDatabase();
+    blizzardDatabase.CreateDatabase();
 
     return 0;
 }
