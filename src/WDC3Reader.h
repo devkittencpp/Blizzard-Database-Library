@@ -33,5 +33,80 @@ public:
     void ReadRows(VersionDefinition& versionDefinition);
 private:
     bool MemoryEmpty(char* data, size_t length);
+
+   
+    template<typename T>
+    T GetFieldValue(int Id, BitReader& reader, std::map<long, std::string>& stringLookup, FieldMeta& fieldMeta, 
+        ColumnMetaData& columnMeta, std::vector<Int32>& palletData, std::map<int, Int32>& commonData)
+    {
+        switch(columnMeta.CompressionType)
+        {
+            case CompressionType::None:
+            {
+                auto bitSize = 32 - fieldMeta.Bits;
+                if (bitSize <= 0)
+                    bitSize = columnMeta.compressionData.Immediate.BitWidth;
+
+                return reader.ReadValue64(bitSize).As<T>();
+            }
+            case CompressionType::SignedImmediate:
+            {
+                return reader.ReadSignedValue64(columnMeta.compressionData.Immediate.BitWidth).As<T>();
+            }
+            case CompressionType::Immediate:
+            {
+                return reader.ReadValue64(columnMeta.compressionData.Immediate.BitWidth).As<T>();
+            }
+            case CompressionType::Common:
+            {
+                break;
+            }
+            case CompressionType::Pallet:
+            {   
+                auto value = reader.ReadUint32(columnMeta.compressionData.Pallet.BitWidth);
+                return palletData[value].As<T>();   
+            }
+            case CompressionType::PalletArray:
+            {
+                break;
+            }
+        }
+    }
+
+    template<typename T>
+    std::vector<T> GetFieldArrayValue(int Id, BitReader& reader, std::map<long, std::string>& stringLookup, FieldMeta& fieldMeta,
+        ColumnMetaData& columnMeta, std::vector<Int32>& palletData, std::map<int, Int32>& commonData)
+    {
+        auto vector = std::vector<T>();
+        switch (columnMeta.CompressionType)
+        {
+            case CompressionType::None:
+            {
+                auto bitSize = 32 - fieldMeta.Bits;
+                if (bitSize <= 0)
+                    bitSize = columnMeta.compressionData.Immediate.BitWidth;
+
+                auto entires = columnMeta.Size / bitSize;
+                for (auto i = 0; i < entires; i++)
+                {
+                    auto entry = reader.ReadValue64(bitSize).As<T>();
+                    vector.push_back(entry);
+                }
+                break;
+            }
+            case CompressionType::PalletArray:
+            {
+                auto cardinality = columnMeta.compressionData.Pallet.Cardinality;
+                auto index = reader.ReadUint32(columnMeta.compressionData.Pallet.BitWidth);
+
+                for (auto i = 0; i < cardinality; i++)
+                {
+                    auto data = palletData[i + cardinality * (index)].As<T>();
+                    vector.push_back(data);
+                }
+            }
+        }
+        return vector;
+    }
 };
 

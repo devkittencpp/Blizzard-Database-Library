@@ -180,55 +180,78 @@ void WDC3Reader::ReadRows(VersionDefinition& versionDefinition)
             auto versionDefs = versionDefinition.versionDefinitions;
             auto row = WDC3Row(Id, bitReader, StringTable);
 
-            for (int def = 1; def < versionDefs.definitions.size(); def++)
-            {
-                auto& const fieldMeta = Meta.at(def);
-                auto& const columnMeta = ColumnMeta.at(def);
+            for (int def = 0; def < versionDefs.definitions.size()-1; def++)
+            {          
+                auto fieldMeta = Meta.at(def);
+                auto columnMeta = ColumnMeta.at(def);
+                auto commonData = std::map<int, Int32>();
+                auto palletData = std::vector<Int32>();
 
+                if (CommonData.contains(def))
+                {
+                    commonData = CommonData.at(def);
+                }
 
-                //auto& const palletData = PalletData.at(def);
-                //auto& const commonData = CommonData.at(def);
-
-                auto column = versionDefs.definitions[def];
+                if (PalletData.contains(def))
+                {
+                    palletData = PalletData.at(def);
+                }
+   
+                auto column = versionDefs.definitions[def+1];
                 auto tablecolumn = columns.at(column.name);
                 auto type = tablecolumn.type;
 
-                if (columnMeta.CompressionType == CompressionType::None)
+                if (StringExtenstions::Compare(column.name, "MinimapIconScale"))
                 {
-                    if (StringExtenstions::Compare(type, "int"))
+                    int i = 0;
+                }
+            
+                if (StringExtenstions::Compare(type, "int"))
+                {
+                    if (column.arrLength > 0)
                     {
-                        auto bitSize = 32 - fieldMeta.Bits;
-                        if (bitSize <= 0)
-                            bitSize = columnMeta.compressionData.Immediate.BitWidth;
+                        auto value = GetFieldArrayValue<unsigned int>(Id, bitReader, StringTable, fieldMeta, columnMeta, palletData, commonData);
 
-                        auto value = bitReader.ReadValue64(bitSize);
+                        if (value.size() >= 2)
+                            std::cout << type << " " << (int)columnMeta.CompressionType << " " << column.name << " " << fieldMeta.Bits << " => " << value[0] << ":" << value[1] << std::endl;
 
-                        ss << value.LongLong;
+                        continue;
                     }
 
-                    if (StringExtenstions::Compare(type, "float"))
-                    {
-                        auto arrayLength = column.arrLength;
-
-                        for (int i = 0; i < arrayLength; i++)
-                        {
-                            auto value = (float)bitReader.ReadUint32(32);
-                        }
-                    }
-
+                    long long value = 0;
+                    if (column.size == 8 && column.isSigned)        
+                        value = GetFieldValue<char>(Id, bitReader, StringTable, fieldMeta, columnMeta, palletData, commonData);
+                    if (column.size == 8 && !column.isSigned)
+                        value = GetFieldValue<unsigned char>(Id, bitReader, StringTable, fieldMeta, columnMeta, palletData, commonData);
+                    if (column.size == 16 && column.isSigned)
+                        value = GetFieldValue<short>(Id, bitReader, StringTable, fieldMeta, columnMeta, palletData, commonData);
+                    if (column.size == 16 && !column.isSigned)
+                        value = GetFieldValue<unsigned short>(Id, bitReader, StringTable, fieldMeta, columnMeta, palletData, commonData);                    
+                    if (column.size == 32 && column.isSigned)
+                        value = GetFieldValue<int>(Id, bitReader, StringTable, fieldMeta, columnMeta, palletData, commonData);
+                    if (column.size == 32 && !column.isSigned)
+                        value = GetFieldValue<unsigned int>(Id, bitReader, StringTable, fieldMeta, columnMeta, palletData, commonData);
+                    
+                    std::cout << type << " " << (int)columnMeta.CompressionType << " " << column.name << " " << 8 << " => " << value << std::endl;
                 }
 
-                if (columnMeta.CompressionType == CompressionType::SignedImmediate)
+                if (StringExtenstions::Compare(type, "float"))
                 {
-                    if (StringExtenstions::Compare(type, "int"))
+                    if (column.arrLength > 0)
                     {
-                        auto bitSize = columnMeta.compressionData.Immediate.BitWidth;
-                        auto value = bitReader.ReadSignedValue64(bitSize);
+                        auto value = GetFieldArrayValue<float>(Id, bitReader, StringTable, fieldMeta, columnMeta, palletData, commonData);
 
-                        ss << value.LongLong;
+                        if (value.size() >= 2)
+                            std::cout << type << " " << (int)columnMeta.CompressionType << " " << column.name << " " << fieldMeta.Bits << " => " << value[0] << ":" << value[1] << std::endl;
+                        
+                        continue;
                     }
+                    else
+                    {
+                        auto value =  GetFieldValue<float>(Id, bitReader, StringTable, fieldMeta, columnMeta, palletData, commonData);
+                        std::cout << type << " " << (int)columnMeta.CompressionType << " " << column.name << " " << 8 << " => " << value << std::endl;
+                    }    
                 }
-
 
                 if (StringExtenstions::Compare(type, "string") || StringExtenstions::Compare(type, "locstring"))
                 {
@@ -237,7 +260,9 @@ void WDC3Reader::ReadRows(VersionDefinition& versionDefinition)
                     auto offsetPosition = readerOffset + (bitReader.Position >> 3);
                     auto lookupId = bitReader.ReadUint32(32);
                     auto stringLookupIndex = offsetPosition + lookupId;
-                    auto lookup = StringTable.at(stringLookupIndex);
+                    auto value = StringTable.at(stringLookupIndex);
+
+                    std::cout << type << " " << (int)columnMeta.CompressionType << " " << column.name << " " << fieldMeta.Bits << " => " << value << std::endl;
                 }
             }
         }

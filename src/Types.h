@@ -75,12 +75,33 @@ union Int32
     int Int;
     short Short;
     char Byte;
+    float Float;
 
     unsigned int UInt;
     unsigned short UShort;
     unsigned char UByte;
 
     char _rawbytes[4];
+
+public:
+    template<typename T>
+    T As()
+    {
+        if (std::is_same<T, int>::value)
+            return Int;
+        if (std::is_same<T, short>::value)
+            return Short;
+        if (std::is_same<T, char>::value)
+            return Byte;
+        if (std::is_same<T, unsigned int>::value)
+            return UInt;
+        if (std::is_same<T, unsigned short>::value)
+            return UShort;
+        if (std::is_same<T, unsigned char>::value)
+            return UByte;
+        if (std::is_same<T, float>::value)
+            return Float;
+    }
 };
 
 union Int64
@@ -90,6 +111,7 @@ union Int64
     int Int;
     short Short;
     char Byte;
+    float Float;
 
     unsigned long long ULongLong;
     unsigned long ULong;
@@ -98,6 +120,34 @@ union Int64
     unsigned char UByte;
 
     char _rawbytes[8];
+
+public:
+    template<typename T>
+    T As()
+    {
+        if (std::is_same<T, long long>::value)
+            return LongLong;
+        if (std::is_same<T, long>::value)
+            return Long;
+        if (std::is_same<T, int>::value)
+            return Int;
+        if (std::is_same<T, short>::value)
+            return Short;
+        if (std::is_same<T, char>::value)
+            return Byte;
+        if (std::is_same<T, unsigned long long>::value)
+            return ULongLong;
+        if (std::is_same<T, unsigned long>::value)
+            return ULong;
+        if (std::is_same<T, unsigned int>::value)
+            return UInt;
+        if (std::is_same<T, unsigned short>::value)
+            return UShort;
+        if (std::is_same<T, unsigned char>::value)
+            return UByte;
+        if (std::is_same<T, float>::value)
+            return Float;
+    }
 };
 
 struct FieldMeta

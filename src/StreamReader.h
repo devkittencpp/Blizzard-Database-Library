@@ -43,31 +43,39 @@ public:
         return ss.str();
     }
 
-    std::string DumpBlock()
+    std::string DumpBlock(size_t size)
     {
-        return hexStr(_dataStart.get(), DataLength);
+        return hexStr(_dataStart.get() + Position, size);
     }
 
     unsigned int ReadUint32(int numberOfBits)
     {
-        auto index = Offset + (int)(Position >> (int)3);
+        auto index = Offset + (Position >> 3);
         auto p1 = (32 - numberOfBits - (Position & 7));
         auto p2 = (32 - numberOfBits);
+        auto ptrSize = sizeof(unsigned int);
 
-        auto integerPointer = reinterpret_cast<unsigned int*>(_dataStart.get());
-        auto result = ((integerPointer[index / 4]) << p1 >> p2);
+        unsigned int result;
+        memcpy(&result, _dataStart.get() + index, ptrSize);
+
+        result = result << p1 >> p2;
+
         Position += numberOfBits;
         return result;
     }
 
     unsigned long long ReadUint64(int numberOfBits)
     {
-        auto index = Offset + (int)(Position >> (int)3);
+        auto index = Offset + (Position >> 3);
         auto p1 = (64 - numberOfBits - (Position & 7));
         auto p2 = (64 - numberOfBits);
+        auto ptrSize = sizeof(unsigned long long);
 
-        auto integerPointer = reinterpret_cast<unsigned long*>(_dataStart.get());
-        auto result = ((integerPointer[index / 8]) << p1 >> p2);
+        unsigned long long result;
+        memcpy(&result, _dataStart.get() + index, ptrSize);
+
+        result = result << p1 >> p2;
+
         Position += numberOfBits;
         return result;
     }
@@ -84,7 +92,7 @@ public:
         auto value = Int64();
         value.ULongLong = ReadUint64(numberOfBits);
         auto signedShift = 1UL << (numberOfBits - 1);
-        value.ULongLong = (signedShift ^ value.ULongLong) - signedShift;
+        value.LongLong = (signedShift ^ value.ULongLong) - signedShift;
         return value;
     }
 
