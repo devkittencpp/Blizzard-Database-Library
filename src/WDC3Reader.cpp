@@ -172,6 +172,8 @@ std::vector<BlizzardDatabaseRow> WDC3Reader::ReadRows(VersionDefinition& version
             auto bitReader = BitReader(recordDataBlock, recordBlockSize);
             if ((Header.Flags & DB2Flags::Sparse) == DB2Flags::Sparse)
             {
+
+                std::cout << "Sparse" << std::endl;
                 //bitReader.Position = position;
                 //streamReader.Jump(0);
                 //position += sparseDataEntries[i].Size * 8;
@@ -264,6 +266,14 @@ std::vector<BlizzardDatabaseRow> WDC3Reader::ReadRows(VersionDefinition& version
 
                 if (StringExtenstions::Compare(type, "string") || StringExtenstions::Compare(type, "locstring"))
                 {
+                    if (column.arrLength > 0)
+                    {
+                        auto recordIndex = i + previousRecordCount;
+                        auto readerOffset = (recordIndex * recordSize) - (Header.RecordsCount * recordSize);
+                        auto entries = GetFieldStringArrayValue(readerOffset, bitReader, StringTable, fieldMeta, columnMeta, palletData, commonData);
+                        continue;
+                    }
+
                     auto recordIndex = i + previousRecordCount;
                     auto readerOffset = (recordIndex * recordSize) - (Header.RecordsCount * recordSize);
                     auto offsetPosition = readerOffset + (bitReader.Position >> 3);

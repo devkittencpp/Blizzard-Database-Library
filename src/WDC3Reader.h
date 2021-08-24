@@ -114,5 +114,30 @@ private:
         }
         return vector;
     }
+
+    std::vector<std::string> GetFieldStringArrayValue(int offset, BitReader& reader, std::map<long, std::string>& stringLookup, FieldMeta& fieldMeta,
+        ColumnMetaData& columnMeta, std::vector<Int32>& palletData, std::map<int, Int32>& commonData)
+    {
+        auto vector = std::vector<std::string>();
+        switch (columnMeta.CompressionType)
+        {
+            case CompressionType::None:
+            {
+                auto bitSize = 32 - fieldMeta.Bits;
+                if (bitSize <= 0)
+                    bitSize = columnMeta.compressionData.Immediate.BitWidth;
+
+                auto entires = columnMeta.Size / bitSize;
+                for (auto i = 0; i < entires; i++)
+                {
+                    auto entryIndex = (reader.Position >> 3) + offset + reader.ReadValue64(bitSize).As<int>();
+                    auto string = stringLookup.at(entryIndex);
+                    vector.push_back(string);
+                }
+            }
+        }
+
+        return vector;
+    }
 };
 
