@@ -172,7 +172,7 @@ struct ColumnCompressionData_Pallet
 
 struct ColumnCompressionData_Common
 {
-    int DefaultValue;
+    Int32 DefaultValue;
     int B;
     int C;
 };
