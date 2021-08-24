@@ -239,6 +239,10 @@ std::vector<BlizzardDatabaseRow> WDC3Reader::ReadRows(VersionDefinition& version
                         value = GetFieldValue<int>(Id, bitReader, StringTable, fieldMeta, columnMeta, palletData, commonData);
                     if (column.size == 32 && !column.isSigned)
                         value = GetFieldValue<unsigned int>(Id, bitReader, StringTable, fieldMeta, columnMeta, palletData, commonData);
+                    if (column.size == 64 && column.isSigned)
+                        value = GetFieldValue<long long>(Id, bitReader, StringTable, fieldMeta, columnMeta, palletData, commonData);
+                    if (column.size == 64&& !column.isSigned)
+                        value = GetFieldValue<unsigned long long>(Id, bitReader, StringTable, fieldMeta, columnMeta, palletData, commonData);
                     
 
                     row.Columns[column.name] = std::to_string(value);
