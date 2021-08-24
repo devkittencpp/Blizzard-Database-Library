@@ -7,7 +7,7 @@
 #include "WDC3Reader.h"
 #include <DatabaseDefinition.h>
 #include <DatabaseBuilder.h>
-#include <Shared.h>
+#include <Extensions.h>
 #include <sstream>
 
 class BlizzardDatabase
