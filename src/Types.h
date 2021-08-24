@@ -1,6 +1,6 @@
 #pragma once
-#include<type_traits>
-
+#include <type_traits>
+#include <map>
 enum class DB2Flags : unsigned short
 {
     None = 0x0,
@@ -148,6 +148,20 @@ public:
         if (std::is_same<T, float>::value)
             return Float;
     }
+};
+
+struct ReferenceData
+{
+    int NumRecords;
+    int MinId;
+    int MaxId;
+    std::map<int, int> Entries;
+};
+
+struct ReferenceEntry
+{
+    int Id;
+    int Index;
 };
 
 struct FieldMeta

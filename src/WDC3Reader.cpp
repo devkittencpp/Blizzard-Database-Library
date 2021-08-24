@@ -135,20 +135,19 @@ std::vector<BlizzardDatabaseRow> WDC3Reader::ReadRows(VersionDefinition& version
             sparseDataEntries = _streamReader.ReadArray<SparseEntry>(section.OffsetMapIDCount);
         }
 
+        auto referenceData = ReferenceData();
         if (section.ParentLookupDataSize > 0)
         {
-            //var oldPosition = reader.BaseStream.Position;
-            //refData.NumRecords = reader.ReadInt32();
-            //refData.MinId = reader.ReadInt32();
-            //refData.MaxId = reader.ReadInt32();
-            //
-            //var entries = reader.ReadArray<ReferenceEntry>(refData.NumRecords);
-            //for (int i = 0; i < entries.Length; i++)
-            //{
-            //    refData.Entries[entries[i].Index] = entries[i].Id;
-            //}
-
-            std::cout << "Has Lookup Data" << std::endl;
+            auto oldPosition = _streamReader.Position();
+            referenceData.NumRecords = _streamReader.Read<unsigned int>();
+            referenceData.MinId = _streamReader.Read<unsigned int>();
+            referenceData.MaxId = _streamReader.Read<unsigned int>();
+            
+            auto entries = _streamReader.ReadArray<ReferenceEntry>(referenceData.NumRecords);
+            for (int i = 0; i < entries.size(); i++)
+            {
+                referenceData.Entries[entries[i].Index] = entries[i].Id;
+            }
         }
 
         if (section.OffsetMapIDCount > 0)
@@ -160,8 +159,7 @@ std::vector<BlizzardDatabaseRow> WDC3Reader::ReadRows(VersionDefinition& version
 
             indexData = sparseIndexData;
         }
-        
-      
+         
         //Parsing Records
         auto position = 0;
         auto recordSize = Header.RecordSize;
@@ -197,7 +195,7 @@ std::vector<BlizzardDatabaseRow> WDC3Reader::ReadRows(VersionDefinition& version
                 auto columnMeta = ColumnMeta.at(def);
                 auto commonData = std::map<int, Int32>();
                 auto palletData = std::vector<Int32>();
-
+               
                 if (CommonData.contains(def))
                 {
                     commonData = CommonData.at(def);
@@ -211,7 +209,14 @@ std::vector<BlizzardDatabaseRow> WDC3Reader::ReadRows(VersionDefinition& version
                 auto tablecolumn = columns.at(column.name);
                 auto type = tablecolumn.type;
                 auto columnValue = std::string();
-                row.Columns.emplace(column.name, "");
+
+                BlizzardDatabaseColumn blizzColumn = BlizzardDatabaseColumn();
+                if (referenceData.Entries.contains(i))
+                {
+                    blizzColumn.ReferenceId = referenceData.Entries.at(i);
+                }
+
+                row.Columns.emplace(column.name, blizzColumn);
 
                 if (StringExtenstions::Compare(type, "int"))
                 {
@@ -243,7 +248,7 @@ std::vector<BlizzardDatabaseRow> WDC3Reader::ReadRows(VersionDefinition& version
                         value = GetFieldValue<unsigned long long>(Id, bitReader, StringTable, fieldMeta, columnMeta, palletData, commonData);
                     
 
-                    row.Columns[column.name] = std::to_string(value);
+                    row.Columns[column.name].Value = std::to_string(value);
                    //std::cout << type << " " << (int)columnMeta.CompressionType << " " << column.name << " " << 8 << " => " << value << std::endl;
                 }
 
@@ -262,7 +267,7 @@ std::vector<BlizzardDatabaseRow> WDC3Reader::ReadRows(VersionDefinition& version
                     {
                         auto value =  GetFieldValue<float>(Id, bitReader, StringTable, fieldMeta, columnMeta, palletData, commonData);
                         //std::cout << type << " " << (int)columnMeta.CompressionType << " " << column.name << " " << 8 << " => " << value << std::endl;
-                        row.Columns[column.name] = std::to_string(value);
+                        row.Columns[column.name].Value = std::to_string(value);
                     }    
                 }
 
@@ -279,7 +284,7 @@ std::vector<BlizzardDatabaseRow> WDC3Reader::ReadRows(VersionDefinition& version
                     if ((Header.Flags & DB2Flags::Sparse) == DB2Flags::Sparse)
                     {
                         auto value = bitReader.ReadNullTermintingString();
-                        row.Columns[column.name] = value;
+                        row.Columns[column.name].Value = value;
 
                         //std::cout << type << " " << (int)columnMeta.CompressionType << " " << column.name << " " << fieldMeta.Bits << " => " << value << std::endl;
                     }
@@ -291,7 +296,7 @@ std::vector<BlizzardDatabaseRow> WDC3Reader::ReadRows(VersionDefinition& version
                         auto lookupId = GetFieldValue<int>(Id, bitReader, StringTable, fieldMeta, columnMeta, palletData, commonData);
                         auto stringLookupIndex = offsetPosition + (int)lookupId;
                         auto value = StringTable.at(stringLookupIndex);
-                        row.Columns[column.name] = value;
+                        row.Columns[column.name].Value = value;
 
                         //std::cout << type << " " << (int)columnMeta.CompressionType << " " << column.name << " " << fieldMeta.Bits << " => " << value << std::endl;
                     }       

@@ -4,9 +4,15 @@
 #include <vector>
 #include <Shared.h>
 
+struct BlizzardDatabaseColumn
+{
+    std::string Value;
+    int ReferenceId;
+};
+
 struct BlizzardDatabaseRow
 {
-    std::map<std::string, std::string> Columns; //Column=>Value
+    std::map<std::string, BlizzardDatabaseColumn> Columns; //Column=>Value
 };
 
 

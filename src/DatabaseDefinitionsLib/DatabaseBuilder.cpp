@@ -146,23 +146,25 @@ void DatabaseBuilder::ConstructTable(std::fstream& fileStream, std::string& tabl
 				columnType = "TEXT";
 	
 			auto columnValue = column.second;
+
+			StringExtenstions::Replace(columnValue.Value, "\"", "\'");
 	
 			if (StringExtenstions::Compare(columnType, "TEXT"))
 			{
-				if (StringExtenstions::Compare(columnValue, ""))
+				if (StringExtenstions::Compare(columnValue.Value, ""))
 					stringWriter << "\"\"";
 				else
-					stringWriter << "\"" << columnValue << "\"";
+					stringWriter << "\"" << columnValue.Value << "\"";
 	
 				if (index < row.Columns.size() - 1)
 					stringWriter << ",";						
 			}
 			else
 			{
-				if(StringExtenstions::Compare(columnValue, ""))
+				if(StringExtenstions::Compare(columnValue.Value, ""))
 					stringWriter << 0;
 				else
-					stringWriter << columnValue;
+					stringWriter << columnValue.Value;
 	
 				if (index < row.Columns.size() - 1)
 					stringWriter <<  ",";		
