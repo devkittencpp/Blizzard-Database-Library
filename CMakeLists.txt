@@ -12,11 +12,11 @@ include(./cmake/CMakeLib.txt)
 project("DBCD")
 
 # Add the found include directories to our include list.
-INCLUDE_DIRECTORIES("${CMAKE_SOURCE_DIR}/src" )
+INCLUDE_DIRECTORIES("${CMAKE_SOURCE_DIR}/include" )
 
 #library files
 collect_files(DBFileReaderLib_source src false "*.cpp" "")
-collect_files(DBFileReaderLib_headers src false "*.h;*.hpp;*.inl" "")
+collect_files(DBFileReaderLib_headers include false "*.h;*.hpp;*.inl" "")
 
 #testConsole files
 collect_files(TestConsole_source test false "*.cpp" "")
