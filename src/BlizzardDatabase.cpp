@@ -8,7 +8,7 @@ BlizzardDatabase::BlizzardDatabase(std::string databaseCollectionDirectory, std:
 
 DBCTable BlizzardDatabase::ReadTable(std::string tableName)
 {
-    auto build = Build("9.1.0.38549");
+    auto build = Build("9.1.0.38783");
 
     auto absoluteFilePathOfDatabaseTable = _databaseFilesLocation + "\\" + tableName +".db2";
     auto absoluteFilePathOfDatabaseTableDefinition = _databaseDefinitionFilesLocation + "\\" + tableName+".dbd";
@@ -45,7 +45,7 @@ DBCTable BlizzardDatabase::ReadTable(std::string tableName)
 
 void BlizzardDatabase::CreateDatabase()
 {
-    auto build = Build("9.1.0.38549");
+    auto build = Build("9.1.0.38783");
     auto absoluteFilePathOfSqlDatabaseGeneration = _databaseSqlDirectory + "\\sql\\database.sql";
 
     std::fstream databaseFile;
