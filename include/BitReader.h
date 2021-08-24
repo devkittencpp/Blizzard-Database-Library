@@ -1,0 +1,20 @@
+#pragma once
+#include <memory>
+#include <string>
+#include <sstream>
+#include <Types.h>
+
+class BitReader
+{
+    std::unique_ptr<char[]>& _dataStart;
+public:
+    int Position;
+    int DataLength;
+    int Offset;
+    BitReader(std::unique_ptr<char[]>& dataStart, unsigned int dataLength);
+    std::string ReadNullTermintingString();
+    unsigned int ReadUint32(int numberOfBits);
+    unsigned long long ReadUint64(int numberOfBits); 
+    Int64 ReadValue64(int numberOfBits);
+    Int64 ReadSignedValue64(int numberOfBits);
+};

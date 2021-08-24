@@ -7,6 +7,7 @@
 #include<map>
 #include<sstream>
 #include<StreamReader.h>
+#include<bitreader.h>
 #include<Types.h>
 #include<FileStructures.h>
 
@@ -77,6 +78,8 @@ private:
                 return palletData[palletArrayIndex].As<T>();
             }
         }
+
+        return static_cast<T>(0);
     }
 
     template<typename T>

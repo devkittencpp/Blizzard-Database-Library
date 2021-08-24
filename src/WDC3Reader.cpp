@@ -58,7 +58,6 @@ WDC3Reader::WDC3Reader(StreamReader& streamReader) : _streamReader(streamReader)
 
 std::vector<BlizzardDatabaseRow> WDC3Reader::ReadRows(VersionDefinition& versionDefinition)
 {
-
     auto previousStringTableSize = 0;
     auto previousRecordCount = 0;
     auto recordBlockSize = 0;

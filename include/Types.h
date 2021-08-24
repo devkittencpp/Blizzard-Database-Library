@@ -84,23 +84,24 @@ union Int32
     char _rawbytes[4];
 
 public:
-    template<typename T>
+    template<typename T, typename = typename std::enable_if<std::is_arithmetic<T>::value, T>::type>
     T As()
     {
         if (std::is_same<T, int>::value)
-            return Int;
+            return static_cast<T>(Int);
         if (std::is_same<T, short>::value)
-            return Short;
+            return static_cast<T>(Short);
         if (std::is_same<T, char>::value)
-            return Byte;
+            return static_cast<T>(Byte);
         if (std::is_same<T, unsigned int>::value)
-            return UInt;
+            return static_cast<T>(UInt);
         if (std::is_same<T, unsigned short>::value)
-            return UShort;
+            return static_cast<T>(UShort);
         if (std::is_same<T, unsigned char>::value)
-            return UByte;
+            return static_cast<T>(UByte);
         if (std::is_same<T, float>::value)
-            return Float;
+            return static_cast<T>(Float);
+        return  static_cast<T>(0);
     }
 };
 
@@ -122,31 +123,32 @@ union Int64
     char _rawbytes[8];
 
 public:
-    template<typename T>
+    template<typename T, typename = typename std::enable_if<std::is_arithmetic<T>::value, T>::type>
     T As()
     {
         if (std::is_same<T, long long>::value)
-            return LongLong;
+            return static_cast<T>(LongLong);
         if (std::is_same<T, long>::value)
-            return Long;
+            return static_cast<T>(Long);
         if (std::is_same<T, int>::value)
-            return Int;
+            return static_cast<T>(Int);
         if (std::is_same<T, short>::value)
-            return Short;
+            return static_cast<T>(Short);
         if (std::is_same<T, char>::value)
-            return Byte;
+            return static_cast<T>(Byte);
         if (std::is_same<T, unsigned long long>::value)
-            return ULongLong;
+            return static_cast<T>(ULongLong);
         if (std::is_same<T, unsigned long>::value)
-            return ULong;
+            return static_cast<T>(ULong);
         if (std::is_same<T, unsigned int>::value)
-            return UInt;
+            return static_cast<T>(UInt);
         if (std::is_same<T, unsigned short>::value)
-            return UShort;
+            return static_cast<T>(UShort);
         if (std::is_same<T, unsigned char>::value)
-            return UByte;
+            return static_cast<T>(UByte);
         if (std::is_same<T, float>::value)
-            return Float;
+            return static_cast<T>(Float);
+        return static_cast<T>(0);
     }
 };
 
