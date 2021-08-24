@@ -45,8 +45,14 @@ int main(int argc, char* argv[])
     }
     
     auto blizzardDatabase = BlizzardDatabase(dbcFileDirectory, dbdFileDirectory, dbdFileDirectory);
-   // auto table = blizzardDatabase.ReadTable("map");
-
+    //auto mapTable = blizzardDatabase.ReadTable("map");
+    //auto achievementTable = blizzardDatabase.ReadTable("achievement");
+    //auto areapoiTable = blizzardDatabase.ReadTable("areapoi");
+    //auto BattlePetEffectPropertiesTable = blizzardDatabase.ReadTable("BattlePetEffectProperties");
+    //auto CharacterLoadoutTable = blizzardDatabase.ReadTable("CharacterLoadout");
+    //auto ItemSparseTable = blizzardDatabase.ReadTable("ItemSparse");
+    //auto ItemSparseTable = blizzardDatabase.ReadTable("UIDungeonScoreRarity");
+    
     blizzardDatabase.CreateDatabase();
 
     return 0;

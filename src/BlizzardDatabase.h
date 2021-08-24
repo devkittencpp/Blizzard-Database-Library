@@ -8,7 +8,6 @@
 #include <DatabaseDefinition.h>
 #include <DatabaseBuilder.h>
 #include <Shared.h>
-#include <SQLiteCpp/SQLiteCpp.h>
 #include <sstream>
 
 class BlizzardDatabase

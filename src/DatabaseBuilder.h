@@ -2,7 +2,6 @@
 #include <iostream>
 #include <StreamReader.h>
 #include <FileStructures.h>
-#include <SQLiteCpp/SQLiteCpp.h>
 #include <exception>
 #include <algorithm>
 #include <FileStructures.h>
