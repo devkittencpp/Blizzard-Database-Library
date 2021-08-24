@@ -70,7 +70,7 @@ std::vector<BlizzardDatabaseRow> WDC3Reader::ReadRows(VersionDefinition& version
     {     
         _streamReader.Jump(section.FileOffset);
 
-        if ((Header.Flags & DB2Flags::Sparse) != Header.Flags)
+        if (!((Header.Flags & DB2Flags::Sparse) == DB2Flags::Sparse))
         {
             recordBlockSize = section.NumRecords * Header.RecordSize;
             recordDataBlock = _streamReader.ReadBlock(recordBlockSize);
@@ -97,12 +97,12 @@ std::vector<BlizzardDatabaseRow> WDC3Reader::ReadRows(VersionDefinition& version
                 std::cout << "Over/Under Read Section" << std::endl;
         }
   
-
-        //if (section.TactKeyLookup != 0 && MemoryEmpty(recordDataBlock.get(), recordBlockSize))
-        //{
-        //    previousRecordCount += section.NumRecords;
-        //    continue;
-        //}
+        //Skip encryption
+        if (section.TactKeyLookup != 0 && MemoryEmpty(recordDataBlock.get(), recordBlockSize))
+        {
+            previousRecordCount += section.NumRecords;
+            continue;
+        }
 
         auto indexData = _streamReader.ReadArray<int>(section.IndexDataSize / 4);
     
@@ -170,7 +170,7 @@ std::vector<BlizzardDatabaseRow> WDC3Reader::ReadRows(VersionDefinition& version
         for (int i = 0; i < section.NumRecords; i++)
         {
             auto bitReader = BitReader(recordDataBlock, recordBlockSize);
-            if ((Header.Flags & DB2Flags::Sparse) == Header.Flags)
+            if ((Header.Flags & DB2Flags::Sparse) == DB2Flags::Sparse)
             {
                 //bitReader.Position = position;
                 //streamReader.Jump(0);
@@ -186,8 +186,13 @@ std::vector<BlizzardDatabaseRow> WDC3Reader::ReadRows(VersionDefinition& version
             auto versionDefs = versionDefinition.versionDefinitions;
             auto row = BlizzardDatabaseRow();
 
-            for (int def = 0; def < versionDefs.definitions.size()-1; def++)
-            {          
+            for (int def = 0; def < ColumnMeta.size(); def++)
+            {
+                auto definitionIndex = Id == -1 ? def : def + 1;
+                auto column = versionDefs.definitions[definitionIndex];
+                if(!column.IsInline)
+                    column = versionDefs.definitions[definitionIndex + 1];
+                  
                 auto fieldMeta = Meta.at(def);
                 auto columnMeta = ColumnMeta.at(def);
                 auto commonData = std::map<int, Int32>();
@@ -202,8 +207,7 @@ std::vector<BlizzardDatabaseRow> WDC3Reader::ReadRows(VersionDefinition& version
                 {
                     palletData = PalletData.at(def);
                 }
-   
-                auto column = versionDefs.definitions[def+1];
+  
                 auto tablecolumn = columns.at(column.name);
                 auto type = tablecolumn.type;
                 auto columnValue = std::string();
@@ -263,11 +267,12 @@ std::vector<BlizzardDatabaseRow> WDC3Reader::ReadRows(VersionDefinition& version
                     auto recordIndex = i + previousRecordCount;
                     auto readerOffset = (recordIndex * recordSize) - (Header.RecordsCount * recordSize);
                     auto offsetPosition = readerOffset + (bitReader.Position >> 3);
-                    auto lookupId = bitReader.ReadUint32(32);
-                    auto stringLookupIndex = offsetPosition + lookupId;
+                    auto lookupId = GetFieldValue<int>(Id, bitReader, StringTable, fieldMeta, columnMeta, palletData, commonData);
+                    auto stringLookupIndex = offsetPosition + (int)lookupId;
                     auto value = StringTable.at(stringLookupIndex);
                     row.Columns[column.name] = value;
-                   // std::cout << type << " " << (int)columnMeta.CompressionType << " " << column.name << " " << fieldMeta.Bits << " => " << value << std::endl;
+
+                    //std::cout << type << " " << (int)columnMeta.CompressionType << " " << column.name << " " << fieldMeta.Bits << " => " << value << std::endl;
                 }
             }
 
