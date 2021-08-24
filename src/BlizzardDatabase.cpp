@@ -6,26 +6,19 @@ BlizzardDatabase::BlizzardDatabase(std::string databaseCollectionDirectory, std:
 
 }
 
-DBCTable BlizzardDatabase::ReadTable(std::string tableName)
+BlizzardDatabaseTable BlizzardDatabase::ReadTable(std::string tableName)
 {
     auto build = Build("9.1.0.39584");
 
     auto absoluteFilePathOfDatabaseTable = _databaseFilesLocation + "\\" + tableName +".db2";
     auto absoluteFilePathOfDatabaseTableDefinition = _databaseDefinitionFilesLocation + "\\" + tableName+".dbd";
-    auto absoluteFilePathOfSqlDatabaseGeneration = _databaseSqlDirectory + "\\sql\\" + tableName + ".sql";
-
-    std::fstream databaseFile;
-    databaseFile.open(absoluteFilePathOfSqlDatabaseGeneration, std::ifstream::out | std::ifstream::in | std::ifstream::trunc);
 
     auto databaseDefinition = DatabaseDefinition(absoluteFilePathOfDatabaseTableDefinition);
-    auto tableDefinitions = databaseDefinition.Read();
     auto tableDefinition = VersionDefinition();
     auto tableFound = databaseDefinition.For(build, tableDefinition);
 
     if(tableFound == false)
         std::cout << "Verion Not found" << std::endl;
-
-    auto tableBuilder = DatabaseBuilder(tableDefinitions, build);
 
     std::ifstream fileStream;
     fileStream.open(absoluteFilePathOfDatabaseTable, std::ifstream::binary);
@@ -44,11 +37,10 @@ DBCTable BlizzardDatabase::ReadTable(std::string tableName)
         auto reader = WDC3Reader(streamReader);
         rows = reader.ReadRows(tableDefinition);
     }
-    tableBuilder.ConstructTable(databaseFile, tableName, rows);
-
+   
     fileStream.close();
 
-    return DBCTable();
+    return BlizzardDatabaseTable();
 }
 
 void BlizzardDatabase::CreateDatabase()

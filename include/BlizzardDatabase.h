@@ -1,10 +1,10 @@
 #pragma once
-#include<string>
+#include <string>
 #include <iostream>
 #include <fstream>
 #include <filesystem>
-#include "DbcTable.h"
-#include "WDC3Reader.h"
+#include <BlizzardDatabaseTable.h>
+#include <WDC3Reader.h>
 #include <DatabaseDefinition.h>
 #include <DatabaseBuilder.h>
 #include <Extensions.h>
@@ -19,6 +19,6 @@ private:
 public:
 	BlizzardDatabase(std::string databaseCollectionDirectory, std::string databaseDefinitionDirectory, std::string databaseSqlDirectory);
 
-	DBCTable ReadTable(std::string tableName);
+	BlizzardDatabaseTable ReadTable(std::string tableName);
 	void CreateDatabase();
 };

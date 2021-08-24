@@ -33,8 +33,7 @@ public:
     std::vector<BlizzardDatabaseRow> ReadRows(VersionDefinition& versionDefinition);
 private:
     bool MemoryEmpty(char* data, size_t length);
-
-   
+ 
     template<typename T>
     T GetFieldValue(int Id, BitReader& reader, std::map<long, std::string>& stringLookup, FieldMeta& fieldMeta, 
         ColumnMetaData& columnMeta, std::vector<Int32>& palletData, std::map<int, Int32>& commonData)

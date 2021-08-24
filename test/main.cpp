@@ -1,7 +1,7 @@
-#include<BlizzardDatabase.h>
-#include<iostream>
-#include<string>
-#include<DbcTable.h>
+#include <BlizzardDatabase.h>
+#include <iostream>
+#include <string>
+#include <BlizzardDatabaseTable.h>
 #include <filesystem>
 
 int main(int argc, char* argv[])
@@ -45,15 +45,13 @@ int main(int argc, char* argv[])
     }
     
     auto blizzardDatabase = BlizzardDatabase(dbcFileDirectory, dbdFileDirectory, dbdFileDirectory);
-    //auto mapTable = blizzardDatabase.ReadTable("map");
+    auto mapTable = blizzardDatabase.ReadTable("map");
     //auto achievementTable = blizzardDatabase.ReadTable("achievement");
     //auto areapoiTable = blizzardDatabase.ReadTable("areapoi");
     //auto BattlePetEffectPropertiesTable = blizzardDatabase.ReadTable("BattlePetEffectProperties");
     //auto CharacterLoadoutTable = blizzardDatabase.ReadTable("CharacterLoadout");
     //auto ItemSparseTable = blizzardDatabase.ReadTable("ItemSparse");
     //auto ItemSparseTable = blizzardDatabase.ReadTable("UIDungeonScoreRarity");
-    
-    blizzardDatabase.CreateDatabase();
 
     return 0;
 }
