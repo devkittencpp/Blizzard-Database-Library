@@ -31,10 +31,11 @@ DBCTable BlizzardDatabase::ReadTable(std::string tableName)
 
     std::cout << "File Header Format: " << fileFormatIdentifier << std::endl;
 
+    std::vector<BlizzardDatabaseRow> rows;
     if(StringExtenstions::Compare(fileFormatIdentifier,std::string("WDC3")))
     {
         auto reader = WDC3Reader(streamReader);
-        auto rows = reader.ReadRows(tableDefinition);
+        rows = reader.ReadRows(tableDefinition);
     }
 
     fileStream.close();
@@ -45,7 +46,7 @@ DBCTable BlizzardDatabase::ReadTable(std::string tableName)
 void BlizzardDatabase::CreateDatabase()
 {
     auto build = Build("9.1.0.38549");
-    auto absoluteFilePathOfSqlDatabaseGeneration = _databaseSqlDirectory + "\\sql\\map.sql";
+    auto absoluteFilePathOfSqlDatabaseGeneration = _databaseSqlDirectory + "\\sql\\database.sql";
 
     std::fstream databaseFile;
     databaseFile.open(absoluteFilePathOfSqlDatabaseGeneration, std::ifstream::out | std::ifstream::in | std::ifstream::trunc);
@@ -58,10 +59,6 @@ void BlizzardDatabase::CreateDatabase()
             continue;
 
         auto fileName = entry.path().filename().replace_extension("").generic_string();
-
-        if (!StringExtenstions::Compare(fileName, "Map"))
-            continue;
-
         auto absoluteFilePathOfDatabaseTable = _databaseFilesLocation + "\\" + fileName + ".db2";
         auto absoluteFilePathOfDatabaseTableDefinition = _databaseDefinitionFilesLocation + "\\" + fileName + ".dbd";
 
