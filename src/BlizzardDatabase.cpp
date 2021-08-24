@@ -45,10 +45,10 @@ DBCTable BlizzardDatabase::ReadTable(std::string tableName)
 void BlizzardDatabase::CreateDatabase()
 {
     auto build = Build("9.1.0.38549");
-    auto absoluteFilePathOfSqlDatabaseGeneration = _databaseSqlDirectory + "\\sql\\database.sql";
+    auto absoluteFilePathOfSqlDatabaseGeneration = _databaseSqlDirectory + "\\sql\\map.sql";
 
     std::fstream databaseFile;
-    databaseFile.open(absoluteFilePathOfSqlDatabaseGeneration, std::ifstream::out | std::ifstream::in);
+    databaseFile.open(absoluteFilePathOfSqlDatabaseGeneration, std::ifstream::out | std::ifstream::in | std::ifstream::trunc);
 
     for (const auto& entry : std::filesystem::directory_iterator(_databaseDefinitionFilesLocation))
     {

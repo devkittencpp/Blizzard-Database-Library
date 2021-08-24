@@ -83,7 +83,7 @@ std::vector<BlizzardDatabaseRow> WDC3Reader::ReadRows(VersionDefinition& version
 
                 i += _streamReader.Position() - lastPosition;
 
-               std::cout << lastPosition << " " << i << " " << string << std::endl;
+               //std::cout << lastPosition << " " << i << " " << string << std::endl;
             }
 
             previousStringTableSize += section.StringTableSize;
@@ -215,8 +215,8 @@ std::vector<BlizzardDatabaseRow> WDC3Reader::ReadRows(VersionDefinition& version
                     {
                         auto value = GetFieldArrayValue<unsigned int>(Id, bitReader, StringTable, fieldMeta, columnMeta, palletData, commonData);
 
-                        if (value.size() >= 2)
-                            std::cout << type << " " << (int)columnMeta.CompressionType << " " << column.name << " " << fieldMeta.Bits << " => " << value[0] << ":" << value[1] << std::endl;
+                        //if (value.size() >= 2)
+                           // std::cout << type << " " << (int)columnMeta.CompressionType << " " << column.name << " " << fieldMeta.Bits << " => " << value[0] << ":" << value[1] << std::endl;
 
                       
                         continue;
@@ -238,7 +238,7 @@ std::vector<BlizzardDatabaseRow> WDC3Reader::ReadRows(VersionDefinition& version
                     
 
                     row.Columns[column.name] = std::to_string(value);
-                   std::cout << type << " " << (int)columnMeta.CompressionType << " " << column.name << " " << 8 << " => " << value << std::endl;
+                   //std::cout << type << " " << (int)columnMeta.CompressionType << " " << column.name << " " << 8 << " => " << value << std::endl;
                 }
 
                 if (StringExtenstions::Compare(type, "float"))
@@ -247,15 +247,15 @@ std::vector<BlizzardDatabaseRow> WDC3Reader::ReadRows(VersionDefinition& version
                     {
                         auto value = GetFieldArrayValue<float>(Id, bitReader, StringTable, fieldMeta, columnMeta, palletData, commonData);
 
-                        if (value.size() >= 2)
-                            std::cout << type << " " << (int)columnMeta.CompressionType << " " << column.name << " " << fieldMeta.Bits << " => " << value[0] << ":" << value[1] << std::endl;
+                        //if (value.size() >= 2)
+                            //std::cout << type << " " << (int)columnMeta.CompressionType << " " << column.name << " " << fieldMeta.Bits << " => " << value[0] << ":" << value[1] << std::endl;
                         
                         continue;
                     }
                     else
                     {
                         auto value =  GetFieldValue<float>(Id, bitReader, StringTable, fieldMeta, columnMeta, palletData, commonData);
-                        std::cout << type << " " << (int)columnMeta.CompressionType << " " << column.name << " " << 8 << " => " << value << std::endl;
+                        //std::cout << type << " " << (int)columnMeta.CompressionType << " " << column.name << " " << 8 << " => " << value << std::endl;
                         row.Columns[column.name] = std::to_string(value);
                     }    
                 }
@@ -269,7 +269,7 @@ std::vector<BlizzardDatabaseRow> WDC3Reader::ReadRows(VersionDefinition& version
                     auto stringLookupIndex = offsetPosition + lookupId;
                     auto value = StringTable.at(stringLookupIndex);
                     row.Columns[column.name] = value;
-                    std::cout << type << " " << (int)columnMeta.CompressionType << " " << column.name << " " << fieldMeta.Bits << " => " << value << std::endl;
+                   // std::cout << type << " " << (int)columnMeta.CompressionType << " " << column.name << " " << fieldMeta.Bits << " => " << value << std::endl;
                 }
             }
 

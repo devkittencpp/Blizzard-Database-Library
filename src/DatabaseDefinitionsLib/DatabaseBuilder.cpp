@@ -120,12 +120,12 @@ void DatabaseBuilder::ConstructTable(std::fstream& fileStream, std::string& tabl
 	for (auto& row : rows)
 	{	
 		stringWriter << "INSERT INTO " << tableName << " (";
-
+	
 		auto index = 0;
 		for (auto& column : row.Columns)
 		{
 			auto columnName = column.first;
-
+	
 			stringWriter << columnName;
 			if (index < row.Columns.size() - 1)
 				stringWriter << ",";
@@ -139,7 +139,7 @@ void DatabaseBuilder::ConstructTable(std::fstream& fileStream, std::string& tabl
 		{
 			auto columnDefinition = columnDefinitions.at(column.first);
 			auto columnType = std::string();
-
+	
 			if (StringExtenstions::Compare(columnDefinition.type, "int"))
 				columnType = "INTEGER";
 			if (StringExtenstions::Compare(columnDefinition.type, "float"))
@@ -148,16 +148,16 @@ void DatabaseBuilder::ConstructTable(std::fstream& fileStream, std::string& tabl
 				columnType = "TEXT";
 			if (StringExtenstions::Compare(columnDefinition.type, "string"))
 				columnType = "TEXT";
-
+	
 			auto columnValue = column.second;
-
+	
 			if (StringExtenstions::Compare(columnType, "TEXT"))
 			{
 				if (StringExtenstions::Compare(columnValue, ""))
-					stringWriter << "";
+					stringWriter << "\"\"";
 				else
 					stringWriter << "\"" << columnValue << "\"";
-
+	
 				if (index < row.Columns.size() - 1)
 					stringWriter << ",";						
 			}
@@ -167,16 +167,16 @@ void DatabaseBuilder::ConstructTable(std::fstream& fileStream, std::string& tabl
 					stringWriter << 0;
 				else
 					stringWriter << columnValue;
-
+	
 				if (index < row.Columns.size() - 1)
 					stringWriter <<  ",";		
 			}
-
+	
 			index++;
 		}
-
+	
 		stringWriter << ");" << std::endl;
 	}
-
+	
 	fileStream << stringWriter.str();
 }
