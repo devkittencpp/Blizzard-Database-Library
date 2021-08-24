@@ -217,8 +217,6 @@ std::vector<BlizzardDatabaseRow> WDC3Reader::ReadRows(VersionDefinition& version
 
                         //if (value.size() >= 2)
                            // std::cout << type << " " << (int)columnMeta.CompressionType << " " << column.name << " " << fieldMeta.Bits << " => " << value[0] << ":" << value[1] << std::endl;
-
-                      
                         continue;
                     }
 

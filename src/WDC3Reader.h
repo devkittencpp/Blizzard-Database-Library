@@ -58,7 +58,10 @@ private:
             }
             case CompressionType::Common:
             {
-                break;
+                if (commonData.contains(Id))
+                    return commonData.at(Id).As<T>();
+
+                return columnMeta.compressionData.Common.DefaultValue.As<T>();
             }
             case CompressionType::Pallet:
             {   
@@ -67,7 +70,11 @@ private:
             }
             case CompressionType::PalletArray:
             {
-                break;
+                if (columnMeta.compressionData.Pallet.Cardinality != 1)
+                    break;
+
+                auto palletArrayIndex = reader.ReadUint32(columnMeta.compressionData.Pallet.BitWidth);
+                return palletData[palletArrayIndex].As<T>();
             }
         }
     }
