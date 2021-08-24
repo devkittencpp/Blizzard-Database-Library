@@ -113,10 +113,6 @@ void DatabaseBuilder::ConstructTable(std::fstream& fileStream, std::string& tabl
 	}
 	stringWriter << ");" << std::endl << std::endl;
 
-	fileStream << stringWriter.str();
-
-	stringWriter.clear();
-	
 	for (auto& row : rows)
 	{	
 		stringWriter << "INSERT INTO " << tableName << " (";
