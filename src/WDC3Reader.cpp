@@ -172,11 +172,9 @@ std::vector<BlizzardDatabaseRow> WDC3Reader::ReadRows(VersionDefinition& version
             auto bitReader = BitReader(recordDataBlock, recordBlockSize);
             if ((Header.Flags & DB2Flags::Sparse) == DB2Flags::Sparse)
             {
-
-                std::cout << "Sparse" << std::endl;
-                //bitReader.Position = position;
-                //streamReader.Jump(0);
-                //position += sparseDataEntries[i].Size * 8;
+                //std::cout << "Sparse" << std::endl;
+                bitReader.Position = position;
+                position += sparseDataEntries[i].Size * 8;
             }
             else
             {
@@ -241,7 +239,7 @@ std::vector<BlizzardDatabaseRow> WDC3Reader::ReadRows(VersionDefinition& version
                         value = GetFieldValue<unsigned int>(Id, bitReader, StringTable, fieldMeta, columnMeta, palletData, commonData);
                     if (column.size == 64 && column.isSigned)
                         value = GetFieldValue<long long>(Id, bitReader, StringTable, fieldMeta, columnMeta, palletData, commonData);
-                    if (column.size == 64&& !column.isSigned)
+                    if (column.size == 64 && !column.isSigned)
                         value = GetFieldValue<unsigned long long>(Id, bitReader, StringTable, fieldMeta, columnMeta, palletData, commonData);
                     
 
@@ -278,15 +276,25 @@ std::vector<BlizzardDatabaseRow> WDC3Reader::ReadRows(VersionDefinition& version
                         continue;
                     }
 
-                    auto recordIndex = i + previousRecordCount;
-                    auto readerOffset = (recordIndex * recordSize) - (Header.RecordsCount * recordSize);
-                    auto offsetPosition = readerOffset + (bitReader.Position >> 3);
-                    auto lookupId = GetFieldValue<int>(Id, bitReader, StringTable, fieldMeta, columnMeta, palletData, commonData);
-                    auto stringLookupIndex = offsetPosition + (int)lookupId;
-                    auto value = StringTable.at(stringLookupIndex);
-                    row.Columns[column.name] = value;
+                    if ((Header.Flags & DB2Flags::Sparse) == DB2Flags::Sparse)
+                    {
+                        auto value = bitReader.ReadNullTermintingString();
+                        row.Columns[column.name] = value;
 
-                    //std::cout << type << " " << (int)columnMeta.CompressionType << " " << column.name << " " << fieldMeta.Bits << " => " << value << std::endl;
+                        //std::cout << type << " " << (int)columnMeta.CompressionType << " " << column.name << " " << fieldMeta.Bits << " => " << value << std::endl;
+                    }
+                    else
+                    {
+                        auto recordIndex = i + previousRecordCount;
+                        auto readerOffset = (recordIndex * recordSize) - (Header.RecordsCount * recordSize);
+                        auto offsetPosition = readerOffset + (bitReader.Position >> 3);
+                        auto lookupId = GetFieldValue<int>(Id, bitReader, StringTable, fieldMeta, columnMeta, palletData, commonData);
+                        auto stringLookupIndex = offsetPosition + (int)lookupId;
+                        auto value = StringTable.at(stringLookupIndex);
+                        row.Columns[column.name] = value;
+
+                        //std::cout << type << " " << (int)columnMeta.CompressionType << " " << column.name << " " << fieldMeta.Bits << " => " << value << std::endl;
+                    }       
                 }
             }
 

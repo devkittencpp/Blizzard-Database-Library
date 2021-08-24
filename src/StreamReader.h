@@ -43,6 +43,16 @@ public:
         return ss.str();
     }
 
+    std::string ReadNullTermintingString()
+    {
+        std::stringstream stream;
+        unsigned char byte;
+        while ((byte = (unsigned char)ReadUint32(8)) != '\0')
+            stream << byte;
+       
+        return stream.str();
+    }
+
     std::string DumpBlock(size_t size)
     {
         return hexStr(_dataStart.get() + Position, size);
