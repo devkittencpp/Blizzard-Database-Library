@@ -78,16 +78,17 @@ void BlizzardDatabase::CreateDatabase()
         auto tableVersionDefinition = VersionDefinition();
         auto tableFound = databaseDefinition.For(build, tableVersionDefinition);
 
+        std::vector<BlizzardDatabaseRow> rows;
         if (tableFound == false)
             std::cout << "Verion Not found" << std::endl;
-
-        std::vector<BlizzardDatabaseRow> rows;
-        if (StringExtenstions::Compare(fileFormatIdentifier, std::string("WDC3")))
-        {
-            auto reader = WDC3Reader(streamReader);
-            rows = reader.ReadRows(tableVersionDefinition);
+        else
+        {        
+            if (StringExtenstions::Compare(fileFormatIdentifier, std::string("WDC3")))
+            {
+                auto reader = WDC3Reader(streamReader);
+                rows = reader.ReadRows(tableVersionDefinition);
+            }
         }
-
         tableBuilder.ConstructTable(databaseFile, fileName, rows);
 
         fileStream.close();
