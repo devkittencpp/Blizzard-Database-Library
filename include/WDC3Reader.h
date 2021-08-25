@@ -1,45 +1,47 @@
 #pragma once
-#include<type_traits>
-#include<fstream>
-#include<istream>
-#include<iostream>
-#include<vector>
-#include<map>
-#include<sstream>
-#include<StreamReader.h>
-#include<bitreader.h>
-#include<Types.h>
-#include<FileStructures.h>
+#include <type_traits>
+#include <fstream>
+#include <istream>
+#include <iostream>
+#include <vector>
+#include <map>
+#include <sstream>
+#include <stream/StreamReader.h>
+#include <stream/bitReader.h>
+#include <Types.h>
+#include <FileStructures.h>
 
-class WDC3Reader
-{
-private:
-    const int _headerSize = 72;
-    const unsigned int WDC3FmtSig = 0x33434457;
-    StreamReader _streamReader;
+namespace BlizzardDatabaseLib {
 
-public:
-    WDC3Header Header;
-
-    std::vector<WDC3Section> Sections;
-    std::vector<FieldMeta> Meta;
-    std::vector<ColumnMetaData> ColumnMeta;
-    std::map<int, std::vector<Int32>> PalletData;
-    std::map<int, std::map<int, Int32>> CommonData;
-    std::map<int, int> CopyData;
-    std::map<long, std::string> StringTable;
-
-    WDC3Reader(StreamReader& streamReader);
-    std::vector<BlizzardDatabaseRow> ReadRows(VersionDefinition& versionDefinition);
-private:
-    bool MemoryEmpty(char* data, size_t length);
- 
-    template<typename T>
-    T GetFieldValue(int Id, BitReader& reader, std::map<long, std::string>& stringLookup, FieldMeta& fieldMeta, 
-        ColumnMetaData& columnMeta, std::vector<Int32>& palletData, std::map<int, Int32>& commonData)
+    class WDC3Reader
     {
-        switch(columnMeta.CompressionType)
+    private:
+        const int _headerSize = 72;
+        const unsigned int WDC3FmtSig = 0x33434457;
+        Stream::StreamReader _streamReader;
+
+    public:
+        WDC3Header Header;
+
+        std::vector<WDC3Section> Sections;
+        std::vector<FieldMeta> Meta;
+        std::vector<ColumnMetaData> ColumnMeta;
+        std::map<int, std::vector<Int32>> PalletData;
+        std::map<int, std::map<int, Int32>> CommonData;
+        std::map<int, int> CopyData;
+        std::map<long, std::string> StringTable;
+
+        WDC3Reader(Stream::StreamReader& streamReader);
+        std::vector<BlizzardDatabaseRow> ReadRows(VersionDefinition& versionDefinition);
+    private:
+        bool MemoryEmpty(char* data, size_t length);
+
+        template<typename T>
+        T GetFieldValue(int Id, Stream::BitReader& reader, std::map<long, std::string>& stringLookup, FieldMeta& fieldMeta,
+            ColumnMetaData& columnMeta, std::vector<Int32>& palletData, std::map<int, Int32>& commonData)
         {
+            switch (columnMeta.CompressionType)
+            {
             case CompressionType::None:
             {
                 auto bitSize = 32 - fieldMeta.Bits;
@@ -64,9 +66,9 @@ private:
                 return columnMeta.compressionData.Common.DefaultValue.As<T>();
             }
             case CompressionType::Pallet:
-            {   
+            {
                 auto value = reader.ReadUint32(columnMeta.compressionData.Pallet.BitWidth);
-                return palletData[value].As<T>();   
+                return palletData[value].As<T>();
             }
             case CompressionType::PalletArray:
             {
@@ -76,18 +78,18 @@ private:
                 auto palletArrayIndex = reader.ReadUint32(columnMeta.compressionData.Pallet.BitWidth);
                 return palletData[palletArrayIndex].As<T>();
             }
+            }
+
+            return static_cast<T>(0);
         }
 
-        return static_cast<T>(0);
-    }
-
-    template<typename T>
-    std::vector<T> GetFieldArrayValue(int Id, BitReader& reader, std::map<long, std::string>& stringLookup, FieldMeta& fieldMeta,
-        ColumnMetaData& columnMeta, std::vector<Int32>& palletData, std::map<int, Int32>& commonData)
-    {
-        auto vector = std::vector<T>();
-        switch (columnMeta.CompressionType)
+        template<typename T>
+        std::vector<T> GetFieldArrayValue(int Id, Stream::BitReader& reader, std::map<long, std::string>& stringLookup, FieldMeta& fieldMeta,
+            ColumnMetaData& columnMeta, std::vector<Int32>& palletData, std::map<int, Int32>& commonData)
         {
+            auto vector = std::vector<T>();
+            switch (columnMeta.CompressionType)
+            {
             case CompressionType::None:
             {
                 auto bitSize = 32 - fieldMeta.Bits;
@@ -113,16 +115,16 @@ private:
                     vector.push_back(data);
                 }
             }
+            }
+            return vector;
         }
-        return vector;
-    }
 
-    std::vector<std::string> GetFieldStringArrayValue(int offset, BitReader& reader, std::map<long, std::string>& stringLookup, FieldMeta& fieldMeta,
-        ColumnMetaData& columnMeta, std::vector<Int32>& palletData, std::map<int, Int32>& commonData)
-    {
-        auto vector = std::vector<std::string>();
-        switch (columnMeta.CompressionType)
+        std::vector<std::string> GetFieldStringArrayValue(int offset, Stream::BitReader& reader, std::map<long, std::string>& stringLookup, FieldMeta& fieldMeta,
+            ColumnMetaData& columnMeta, std::vector<Int32>& palletData, std::map<int, Int32>& commonData)
         {
+            auto vector = std::vector<std::string>();
+            switch (columnMeta.CompressionType)
+            {
             case CompressionType::None:
             {
                 auto bitSize = 32 - fieldMeta.Bits;
@@ -137,9 +139,9 @@ private:
                     vector.push_back(string);
                 }
             }
+            }
+
+            return vector;
         }
-
-        return vector;
-    }
-};
-
+    };
+}

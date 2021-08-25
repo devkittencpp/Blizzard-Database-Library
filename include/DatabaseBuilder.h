@@ -1,6 +1,6 @@
 #pragma once
 #include <iostream>
-#include <StreamReader.h>
+#include <stream/StreamReader.h>
 #include <FileStructures.h>
 #include <exception>
 #include <algorithm>

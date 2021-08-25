@@ -10,15 +10,17 @@
 #include <Extensions.h>
 #include <sstream>
 
-class BlizzardDatabase
+namespace BlizzardDatabaseLib
 {
-private:
-	std::string _databaseFilesLocation;
-	std::string _databaseSqlDirectory;
-	std::string _databaseDefinitionFilesLocation;
-public:
-	BlizzardDatabase(std::string databaseCollectionDirectory, std::string databaseDefinitionDirectory, std::string databaseSqlDirectory);
+	class BlizzardDatabase
+	{
+	private:
+		std::string _databaseFilesLocation;
+		std::string _databaseDefinitionFilesLocation;
+	public:
+		BlizzardDatabase(std::string databaseCollectionDirectory, std::string databaseDefinitionDirectory);
 
-	BlizzardDatabaseTable ReadTable(std::string tableName);
-	void CreateDatabase();
-};
+		BlizzardDatabaseTable ReadTable(std::string tableName);
+		void CreateDatabase();
+	};
+}
