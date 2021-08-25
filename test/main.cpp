@@ -35,23 +35,24 @@ int main(int argc, char* argv[])
     if(dbcFileDirectory.empty())
     {
         std::cout << "No Database Directory Found" << std::endl;
-        std::cout << "Expected Argument -DBP <Path>" << std::endl;
+        std::cout << "Expected Argument -DBP:<Path>" << std::endl;
     }
 
     if (dbdFileDirectory.empty())
     {
         std::cout << "No Defintion Directory Found" << std::endl;
-        std::cout << "Expected Argument -DDP <Path>" << std::endl;
+        std::cout << "Expected Argument -DDP:<Path>" << std::endl;
     }
     
     auto blizzardDatabase = BlizzardDatabase(dbcFileDirectory, dbdFileDirectory, dbdFileDirectory);
     auto mapTable = blizzardDatabase.ReadTable("map");
+
     //auto achievementTable = blizzardDatabase.ReadTable("achievement");
     //auto areapoiTable = blizzardDatabase.ReadTable("areapoi");
     //auto BattlePetEffectPropertiesTable = blizzardDatabase.ReadTable("BattlePetEffectProperties");
     //auto CharacterLoadoutTable = blizzardDatabase.ReadTable("CharacterLoadout");
     //auto ItemSparseTable = blizzardDatabase.ReadTable("ItemSparse");
-    //auto ItemSparseTable = blizzardDatabase.ReadTable("UIDungeonScoreRarity");
+    //auto UIDungeonScoreRarityTable = blizzardDatabase.ReadTable("UIDungeonScoreRarity");
 
     return 0;
 }
