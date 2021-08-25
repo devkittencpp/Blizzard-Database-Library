@@ -16,9 +16,9 @@ class StringExtenstions
 public:
     static std::vector<std::string> Split(const std::string& s, char delim)
     {
-        std::vector<std::string> result;
+        std::vector<std::string> result = std::vector<std::string>();
         std::stringstream ss(s);
-        std::string item;
+        std::string item = std::string();
 
         while (std::getline(ss, item, delim))
         {
