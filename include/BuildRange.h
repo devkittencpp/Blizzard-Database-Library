@@ -7,7 +7,7 @@ private:
     Build _minBuild;
     Build _maxBuild;
 public:
-    BuildRange(Build minBuild, Build maxBuild) : _minBuild(minBuild), _maxBuild(_maxBuild) {}
+    BuildRange(Build minBuild, Build maxBuild) : _minBuild(minBuild), _maxBuild(maxBuild) {}
 
     bool Contains(Build& build)
     {
