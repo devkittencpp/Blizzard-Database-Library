@@ -1,4 +1,5 @@
 #include <stream/BitReader.h>
+
 namespace BlizzardDatabaseLib {
     namespace Stream {
 

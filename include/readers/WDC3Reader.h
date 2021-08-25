@@ -7,7 +7,7 @@
 #include <map>
 #include <sstream>
 #include <stream/StreamReader.h>
-#include <stream/bitReader.h>
+#include <stream/BitReader.h>
 #include <Types.h>
 #include <FileStructures.h>
 
