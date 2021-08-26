@@ -40,7 +40,7 @@ namespace BlizzardDatabaseLib {
         T GetFieldValue(int Id, Stream::BitReader& reader, std::map<long, std::string>& stringLookup, Structures::FieldMeta& fieldMeta,
             Structures::ColumnMetaData& columnMeta, std::vector<Structures::Int32>& palletData, std::map<int, Structures::Int32>& commonData)
         {
-            switch (columnMeta.CompressionType)
+            switch (columnMeta.Compression)
             {
             case Structures::CompressionType::None:
             {
@@ -88,7 +88,7 @@ namespace BlizzardDatabaseLib {
             Structures::ColumnMetaData& columnMeta, std::vector<Structures::Int32>& palletData, std::map<int, Structures::Int32>& commonData)
         {
             auto vector = std::vector<T>();
-            switch (columnMeta.CompressionType)
+            switch (columnMeta.Compression)
             {
             case  Structures::CompressionType::None:
             {
@@ -123,7 +123,7 @@ namespace BlizzardDatabaseLib {
             Structures::ColumnMetaData& columnMeta, std::vector<Structures::Int32>& palletData, std::map<int, Structures::Int32>& commonData)
         {
             auto vector = std::vector<std::string>();
-            switch (columnMeta.CompressionType)
+            switch (columnMeta.Compression)
             {
             case Structures::CompressionType::None:
             {

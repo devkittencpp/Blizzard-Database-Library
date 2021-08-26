@@ -32,7 +32,7 @@ namespace BlizzardDatabaseLib
         PalletData = std::map<int, std::vector<Structures::Int32>>();
         for (int i = 0; i < ColumnMeta.size(); i++)
         {
-            if (ColumnMeta[i].CompressionType == Structures::CompressionType::Pallet || ColumnMeta[i].CompressionType == Structures::CompressionType::PalletArray)
+            if (ColumnMeta[i].Compression == Structures::CompressionType::Pallet || ColumnMeta[i].Compression == Structures::CompressionType::PalletArray)
             {
                 auto length = ColumnMeta[i].AdditionalDataSize / sizeof(int);
                 auto pallet = _streamReader.ReadArray<Structures::Int32>(length);
@@ -44,7 +44,7 @@ namespace BlizzardDatabaseLib
         CommonData = std::map<int, std::map<int, Structures::Int32>>();
         for (int i = 0; i < CommonData.size(); i++)
         {
-            if (ColumnMeta[i].CompressionType == Structures::CompressionType::Common)
+            if (ColumnMeta[i].Compression == Structures::CompressionType::Common)
             {
                 CommonData[i] = std::map<int, Structures::Int32>();
                 auto entires = ColumnMeta[i].AdditionalDataSize / 8;

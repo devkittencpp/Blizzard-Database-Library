@@ -209,7 +209,7 @@ namespace BlizzardDatabaseLib {
             unsigned short RecordOffset;
             unsigned short Size;
             unsigned int AdditionalDataSize;
-            CompressionType CompressionType;
+            CompressionType Compression;
             ColumnCompressionData compressionData;
         };
 
