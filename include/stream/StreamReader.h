@@ -4,7 +4,7 @@
 #include <string>
 #include <sstream>
 #include <iomanip>
-#include <Types.h>
+#include <structures/Types.h>
 
 namespace BlizzardDatabaseLib {
     namespace Stream {

@@ -2,7 +2,7 @@
 #include <memory>
 #include <string>
 #include <sstream>
-#include <Types.h>
+#include <structures/Types.h>
 
 namespace BlizzardDatabaseLib {
     namespace Stream {
@@ -18,8 +18,8 @@ namespace BlizzardDatabaseLib {
             std::string ReadNullTermintingString();
             unsigned int ReadUint32(int numberOfBits);
             unsigned long long ReadUint64(int numberOfBits);
-            Int64 ReadValue64(int numberOfBits);
-            Int64 ReadSignedValue64(int numberOfBits);
+            Structures::Int64 ReadValue64(int numberOfBits);
+            Structures::Int64 ReadSignedValue64(int numberOfBits);
         };
 
     }

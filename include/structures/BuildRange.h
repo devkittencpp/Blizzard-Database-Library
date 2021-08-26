@@ -1,18 +1,23 @@
 #pragma once
-#include<Build.h>
+#include<structures/Build.h>
 
-class BuildRange
-{
-private:
-    Build _minBuild;
-    Build _maxBuild;
-public:
-    BuildRange(Build minBuild, Build maxBuild) : _minBuild(minBuild), _maxBuild(maxBuild) {}
+namespace BlizzardDatabaseLib {
+    namespace Structures {
 
-    bool Contains(Build& build)
-    {
-        if (build > _minBuild && build < _maxBuild)
-            return true;
-        return false;
+        class BuildRange
+        {
+        private:
+            Build _minBuild;
+            Build _maxBuild;
+        public:
+            BuildRange(Build minBuild, Build maxBuild) : _minBuild(minBuild), _maxBuild(maxBuild) {}
+
+            bool Contains(Build& build)
+            {
+                if (build > _minBuild && build < _maxBuild)
+                    return true;
+                return false;
+            }
+        };
     }
-};
+}

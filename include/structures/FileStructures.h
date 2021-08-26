@@ -2,82 +2,85 @@
 #include <string>
 #include <map>
 #include <vector>
-#include <Build.h>
-#include <BuildRange.h>
+#include <structures/Build.h>
+#include <structures/BuildRange.h>
 
-struct BlizzardDatabaseColumn
-{
-    std::string Value;
-    int ReferenceId;
-};
+namespace BlizzardDatabaseLib {
+    namespace Structures {
 
-struct BlizzardDatabaseRow
-{
-    std::map<std::string, BlizzardDatabaseColumn> Columns;
-};
+        struct BlizzardDatabaseColumn
+        {
+            std::string Value;
+            int ReferenceId;
+        };
 
-struct ColumnDefinition
-{
-    std::string type;
-    std::string foreignTable;
-    std::string foreignColumn;
-    bool hasForeignKey;
-    bool verified;
-    std::string comment;
-};
+        struct BlizzardDatabaseRow
+        {
+            std::map<std::string, BlizzardDatabaseColumn> Columns;
+        };
 
-struct Definition
-{
-    int size;
-    int arrLength;
-    std::string name;
-    bool isID;
-    bool isRelation;
-    bool IsInline;
-    bool isSigned;
-    std::string comment;
-};
+        struct ColumnDefinition
+        {
+            std::string type;
+            std::string foreignTable;
+            std::string foreignColumn;
+            bool hasForeignKey;
+            bool verified;
+            std::string comment;
+        };
 
-struct VersionDefinitions
-{
-    std::vector<Build> builds;
-    std::vector<BuildRange> buildRanges;
-    std::vector<std::string> layoutHashes;
-    std::string comment;
-    std::vector<Definition> definitions;
+        struct Definition
+        {
+            int size;
+            int arrLength;
+            std::string name;
+            bool isID;
+            bool isRelation;
+            bool IsInline;
+            bool isSigned;
+            std::string comment;
+        };
 
-    VersionDefinitions()
-    {
-        builds = std::vector<Build>();
-        buildRanges = std::vector<BuildRange>();
-        layoutHashes = std::vector<std::string>();
-        comment = std::string();
-        definitions = std::vector<Definition>();
+        struct VersionDefinitions
+        {
+            std::vector<Build> builds;
+            std::vector<BuildRange> buildRanges;
+            std::vector<std::string> layoutHashes;
+            std::string comment;
+            std::vector<Definition> definitions;
+
+            VersionDefinitions()
+            {
+                builds = std::vector<Build>();
+                buildRanges = std::vector<BuildRange>();
+                layoutHashes = std::vector<std::string>();
+                comment = std::string();
+                definitions = std::vector<Definition>();
+            }
+        };
+
+        struct DBDefinition
+        {
+            std::map<std::string, ColumnDefinition> columnDefinitions;
+            std::vector<VersionDefinitions> versionDefinitions;
+
+            DBDefinition()
+            {
+                columnDefinitions = std::map<std::string, ColumnDefinition>();
+                versionDefinitions = std::vector<VersionDefinitions>();
+            }
+        };
+
+        struct VersionDefinition
+        {
+            std::map<std::string, ColumnDefinition> columnDefinitions;
+            VersionDefinitions versionDefinitions;
+
+            VersionDefinition()
+            {
+                columnDefinitions = std::map<std::string, ColumnDefinition>();
+                versionDefinitions = VersionDefinitions();
+            }
+        };
     }
-};
-
-struct DBDefinition
-{
-    std::map<std::string, ColumnDefinition> columnDefinitions;
-    std::vector<VersionDefinitions> versionDefinitions;
-
-    DBDefinition()
-    {
-        columnDefinitions = std::map<std::string, ColumnDefinition>();
-        versionDefinitions = std::vector<VersionDefinitions>();
-    }
-};
-
-struct VersionDefinition
-{
-    std::map<std::string, ColumnDefinition> columnDefinitions;
-    VersionDefinitions versionDefinitions;
-
-    VersionDefinition()
-    {
-        columnDefinitions = std::map<std::string, ColumnDefinition>();
-        versionDefinitions = VersionDefinitions();
-    }
-};
-
-
+}

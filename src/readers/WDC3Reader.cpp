@@ -1,4 +1,4 @@
-#include <WDC3Reader.h>
+#include <readers/WDC3Reader.h>
 
 namespace BlizzardDatabaseLib
 {
@@ -20,33 +20,33 @@ namespace BlizzardDatabaseLib
             return;
         }
 
-        Header = _streamReader.Read<WDC3Header>();
+        Header = _streamReader.Read<Structures::WDC3Header>();
 
         if (Header.sectionsCount == 0 || Header.RecordsCount == 0)
             return;
 
-        Sections = _streamReader.ReadArray<WDC3Section>(Header.sectionsCount);
-        Meta = _streamReader.ReadArray<FieldMeta>(Header.FieldsCount);
-        ColumnMeta = _streamReader.ReadArray<ColumnMetaData>(Header.FieldsCount);
+        Sections = _streamReader.ReadArray<Structures::WDC3Section>(Header.sectionsCount);
+        Meta = _streamReader.ReadArray<Structures::FieldMeta>(Header.FieldsCount);
+        ColumnMeta = _streamReader.ReadArray<Structures::ColumnMetaData>(Header.FieldsCount);
 
-        PalletData = std::map<int, std::vector<Int32>>();
+        PalletData = std::map<int, std::vector<Structures::Int32>>();
         for (int i = 0; i < ColumnMeta.size(); i++)
         {
-            if (ColumnMeta[i].CompressionType == CompressionType::Pallet || ColumnMeta[i].CompressionType == CompressionType::PalletArray)
+            if (ColumnMeta[i].CompressionType == Structures::CompressionType::Pallet || ColumnMeta[i].CompressionType == Structures::CompressionType::PalletArray)
             {
                 auto length = ColumnMeta[i].AdditionalDataSize / sizeof(int);
-                auto pallet = _streamReader.ReadArray<Int32>(length);
+                auto pallet = _streamReader.ReadArray<Structures::Int32>(length);
                 PalletData.emplace(i, pallet);
             }
         }
 
         //-- not yet optimised --
-        CommonData = std::map<int, std::map<int, Int32>>();
+        CommonData = std::map<int, std::map<int, Structures::Int32>>();
         for (int i = 0; i < CommonData.size(); i++)
         {
-            if (ColumnMeta[i].CompressionType == CompressionType::Common)
+            if (ColumnMeta[i].CompressionType == Structures::CompressionType::Common)
             {
-                CommonData[i] = std::map<int, Int32>();
+                CommonData[i] = std::map<int, Structures::Int32>();
                 auto entires = ColumnMeta[i].AdditionalDataSize / 8;
                 for (int j = 0; j < entires; j++)
                 {
@@ -58,20 +58,20 @@ namespace BlizzardDatabaseLib
 
     }
 
-    std::vector<BlizzardDatabaseRow> WDC3Reader::ReadRows(VersionDefinition& versionDefinition)
+    std::vector<Structures::BlizzardDatabaseRow> WDC3Reader::ReadRows(Structures::VersionDefinition& versionDefinition)
     {
         auto previousStringTableSize = 0;
         auto previousRecordCount = 0;
         auto recordBlockSize = 0;
         std::unique_ptr<char[]> recordDataBlock = nullptr;
-        std::vector<BlizzardDatabaseRow> rows;
+        std::vector<Structures::BlizzardDatabaseRow> rows;
 
         auto length = _streamReader.Length();
         for (auto& section : Sections)
         {
             _streamReader.Jump(section.FileOffset);
 
-            if (!((Header.Flags & DB2Flags::Sparse) == DB2Flags::Sparse))
+            if (!((Header.Flags & Structures::DB2Flags::Sparse) == Structures::DB2Flags::Sparse))
             {
                 recordBlockSize = section.NumRecords * Header.RecordSize;
                 recordDataBlock = _streamReader.ReadBlock(recordBlockSize);
@@ -122,7 +122,7 @@ namespace BlizzardDatabaseLib
                 }
             }
 
-            auto sparseDataEntries = std::vector<SparseEntry>();
+            auto sparseDataEntries = std::vector<Structures::SparseEntry>();
             if (section.OffsetMapIDCount > 0)
             {
                 // HACK unittestsparse is malformed and has sparseIndexData first
@@ -133,10 +133,10 @@ namespace BlizzardDatabaseLib
                     _streamReader.Jump(streamPosition);
                 }
 
-                sparseDataEntries = _streamReader.ReadArray<SparseEntry>(section.OffsetMapIDCount);
+                sparseDataEntries = _streamReader.ReadArray<Structures::SparseEntry>(section.OffsetMapIDCount);
             }
 
-            auto referenceData = ReferenceData();
+            auto referenceData = Structures::ReferenceData();
             if (section.ParentLookupDataSize > 0)
             {
                 auto oldPosition = _streamReader.Position();
@@ -144,7 +144,7 @@ namespace BlizzardDatabaseLib
                 referenceData.MinId = _streamReader.Read<unsigned int>();
                 referenceData.MaxId = _streamReader.Read<unsigned int>();
 
-                auto entries = _streamReader.ReadArray<ReferenceEntry>(referenceData.NumRecords);
+                auto entries = _streamReader.ReadArray<Structures::ReferenceEntry>(referenceData.NumRecords);
                 for (int i = 0; i < entries.size(); i++)
                 {
                     referenceData.Entries[entries[i].Index] = entries[i].Id;
@@ -169,7 +169,7 @@ namespace BlizzardDatabaseLib
             for (int i = 0; i < section.NumRecords; i++)
             {
                 auto bitReader = Stream::BitReader(recordDataBlock, recordBlockSize);
-                if ((Header.Flags & DB2Flags::Sparse) == DB2Flags::Sparse)
+                if ((Header.Flags & Structures::DB2Flags::Sparse) == Structures::DB2Flags::Sparse)
                 {
                     //std::cout << "Sparse" << std::endl;
                     bitReader.Position = position;
@@ -183,7 +183,7 @@ namespace BlizzardDatabaseLib
                 auto Id = section.IndexDataSize != 0 ? indexData[i] : -1;
                 auto columns = versionDefinition.columnDefinitions;
                 auto versionDefs = versionDefinition.versionDefinitions;
-                auto row = BlizzardDatabaseRow();
+                auto row = Structures::BlizzardDatabaseRow();
 
                 for (int def = 0; def < ColumnMeta.size(); def++)
                 {
@@ -194,8 +194,8 @@ namespace BlizzardDatabaseLib
 
                     auto fieldMeta = Meta.at(def);
                     auto columnMeta = ColumnMeta.at(def);
-                    auto commonData = std::map<int, Int32>();
-                    auto palletData = std::vector<Int32>();
+                    auto commonData = std::map<int, Structures::Int32>();
+                    auto palletData = std::vector<Structures::Int32>();
 
                     if (CommonData.contains(def))
                     {
@@ -211,7 +211,7 @@ namespace BlizzardDatabaseLib
                     auto type = tablecolumn.type;
                     auto columnValue = std::string();
 
-                    BlizzardDatabaseColumn blizzColumn = BlizzardDatabaseColumn();
+                    Structures::BlizzardDatabaseColumn blizzColumn = Structures::BlizzardDatabaseColumn();
                     if (referenceData.Entries.contains(i))
                     {
                         blizzColumn.ReferenceId = referenceData.Entries.at(i);
@@ -282,7 +282,7 @@ namespace BlizzardDatabaseLib
                             continue;
                         }
 
-                        if ((Header.Flags & DB2Flags::Sparse) == DB2Flags::Sparse)
+                        if ((Header.Flags & Structures::DB2Flags::Sparse) == Structures::DB2Flags::Sparse)
                         {
                             auto value = bitReader.ReadNullTermintingString();
                             row.Columns[column.name].Value = value;

@@ -8,8 +8,8 @@
 #include <sstream>
 #include <stream/StreamReader.h>
 #include <stream/BitReader.h>
-#include <Types.h>
-#include <FileStructures.h>
+#include <structures/Types.h>
+#include <structures/FileStructures.h>
 
 namespace BlizzardDatabaseLib {
 
@@ -21,28 +21,28 @@ namespace BlizzardDatabaseLib {
         Stream::StreamReader _streamReader;
 
     public:
-        WDC3Header Header;
+        Structures::WDC3Header Header;
 
-        std::vector<WDC3Section> Sections;
-        std::vector<FieldMeta> Meta;
-        std::vector<ColumnMetaData> ColumnMeta;
-        std::map<int, std::vector<Int32>> PalletData;
-        std::map<int, std::map<int, Int32>> CommonData;
+        std::vector<Structures::WDC3Section> Sections;
+        std::vector<Structures::FieldMeta> Meta;
+        std::vector<Structures::ColumnMetaData> ColumnMeta;
+        std::map<int, std::vector<Structures::Int32>> PalletData;
+        std::map<int, std::map<int, Structures::Int32>> CommonData;
         std::map<int, int> CopyData;
         std::map<long, std::string> StringTable;
 
         WDC3Reader(Stream::StreamReader& streamReader);
-        std::vector<BlizzardDatabaseRow> ReadRows(VersionDefinition& versionDefinition);
+        std::vector<Structures::BlizzardDatabaseRow> ReadRows(Structures::VersionDefinition& versionDefinition);
     private:
         bool MemoryEmpty(char* data, size_t length);
 
         template<typename T>
-        T GetFieldValue(int Id, Stream::BitReader& reader, std::map<long, std::string>& stringLookup, FieldMeta& fieldMeta,
-            ColumnMetaData& columnMeta, std::vector<Int32>& palletData, std::map<int, Int32>& commonData)
+        T GetFieldValue(int Id, Stream::BitReader& reader, std::map<long, std::string>& stringLookup, Structures::FieldMeta& fieldMeta,
+            Structures::ColumnMetaData& columnMeta, std::vector<Structures::Int32>& palletData, std::map<int, Structures::Int32>& commonData)
         {
             switch (columnMeta.CompressionType)
             {
-            case CompressionType::None:
+            case Structures::CompressionType::None:
             {
                 auto bitSize = 32 - fieldMeta.Bits;
                 if (bitSize <= 0)
@@ -50,27 +50,27 @@ namespace BlizzardDatabaseLib {
 
                 return reader.ReadValue64(bitSize).As<T>();
             }
-            case CompressionType::SignedImmediate:
+            case  Structures::CompressionType::SignedImmediate:
             {
                 return reader.ReadSignedValue64(columnMeta.compressionData.Immediate.BitWidth).As<T>();
             }
-            case CompressionType::Immediate:
+            case  Structures::CompressionType::Immediate:
             {
                 return reader.ReadValue64(columnMeta.compressionData.Immediate.BitWidth).As<T>();
             }
-            case CompressionType::Common:
+            case  Structures::CompressionType::Common:
             {
                 if (commonData.contains(Id))
                     return commonData.at(Id).As<T>();
 
                 return columnMeta.compressionData.Common.DefaultValue.As<T>();
             }
-            case CompressionType::Pallet:
+            case  Structures::CompressionType::Pallet:
             {
                 auto value = reader.ReadUint32(columnMeta.compressionData.Pallet.BitWidth);
                 return palletData[value].As<T>();
             }
-            case CompressionType::PalletArray:
+            case  Structures::CompressionType::PalletArray:
             {
                 if (columnMeta.compressionData.Pallet.Cardinality != 1)
                     break;
@@ -84,13 +84,13 @@ namespace BlizzardDatabaseLib {
         }
 
         template<typename T>
-        std::vector<T> GetFieldArrayValue(int Id, Stream::BitReader& reader, std::map<long, std::string>& stringLookup, FieldMeta& fieldMeta,
-            ColumnMetaData& columnMeta, std::vector<Int32>& palletData, std::map<int, Int32>& commonData)
+        std::vector<T> GetFieldArrayValue(int Id, Stream::BitReader& reader, std::map<long, std::string>& stringLookup, Structures::FieldMeta& fieldMeta,
+            Structures::ColumnMetaData& columnMeta, std::vector<Structures::Int32>& palletData, std::map<int, Structures::Int32>& commonData)
         {
             auto vector = std::vector<T>();
             switch (columnMeta.CompressionType)
             {
-            case CompressionType::None:
+            case  Structures::CompressionType::None:
             {
                 auto bitSize = 32 - fieldMeta.Bits;
                 if (bitSize <= 0)
@@ -104,7 +104,7 @@ namespace BlizzardDatabaseLib {
                 }
                 break;
             }
-            case CompressionType::PalletArray:
+            case  Structures::CompressionType::PalletArray:
             {
                 auto cardinality = columnMeta.compressionData.Pallet.Cardinality;
                 auto index = reader.ReadUint32(columnMeta.compressionData.Pallet.BitWidth);
@@ -119,13 +119,13 @@ namespace BlizzardDatabaseLib {
             return vector;
         }
 
-        std::vector<std::string> GetFieldStringArrayValue(int offset, Stream::BitReader& reader, std::map<long, std::string>& stringLookup, FieldMeta& fieldMeta,
-            ColumnMetaData& columnMeta, std::vector<Int32>& palletData, std::map<int, Int32>& commonData)
+        std::vector<std::string> GetFieldStringArrayValue(int offset, Stream::BitReader& reader, std::map<long, std::string>& stringLookup, Structures::FieldMeta& fieldMeta,
+            Structures::ColumnMetaData& columnMeta, std::vector<Structures::Int32>& palletData, std::map<int, Structures::Int32>& commonData)
         {
             auto vector = std::vector<std::string>();
             switch (columnMeta.CompressionType)
             {
-            case CompressionType::None:
+            case Structures::CompressionType::None:
             {
                 auto bitSize = 32 - fieldMeta.Bits;
                 if (bitSize <= 0)

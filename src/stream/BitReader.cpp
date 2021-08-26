@@ -50,16 +50,16 @@ namespace BlizzardDatabaseLib {
             return result;
         }
 
-        Int64 BitReader::ReadValue64(int numberOfBits)
+        Structures::Int64 BitReader::ReadValue64(int numberOfBits)
         {
-            auto value = Int64();
+            auto value = Structures::Int64();
             value.ULongLong = ReadUint64(numberOfBits);
             return value;
         }
 
-        Int64 BitReader::ReadSignedValue64(int numberOfBits)
+        Structures::Int64 BitReader::ReadSignedValue64(int numberOfBits)
         {
-            auto value = Int64();
+            auto value = Structures::Int64();
             value.ULongLong = ReadUint64(numberOfBits);
             auto signedShift = 1UL << (numberOfBits - 1);
             value.LongLong = (signedShift ^ value.ULongLong) - signedShift;

@@ -10,13 +10,13 @@ namespace BlizzardDatabaseLib
 
     BlizzardDatabaseTable BlizzardDatabase::ReadTable(std::string tableName)
     {
-        auto build = Build("9.1.0.39584");
+        auto build = Structures::Build("9.1.0.39584");
 
         auto absoluteFilePathOfDatabaseTable = _databaseFilesLocation + "\\" + tableName + ".db2";
         auto absoluteFilePathOfDatabaseTableDefinition = _databaseDefinitionFilesLocation + "\\" + tableName + ".dbd";
 
         auto databaseDefinition = DatabaseDefinition(absoluteFilePathOfDatabaseTableDefinition);
-        auto tableDefinition = VersionDefinition();
+        auto tableDefinition = Structures::VersionDefinition();
         auto tableFound = databaseDefinition.For(build, tableDefinition);
 
         if (tableFound == false)
@@ -33,7 +33,7 @@ namespace BlizzardDatabaseLib
 
         std::cout << "File Header Format: " << fileFormatIdentifier << std::endl;
 
-        std::vector<BlizzardDatabaseRow> rows;
+        std::vector<Structures::BlizzardDatabaseRow> rows;
         if (StringExtenstions::Compare(fileFormatIdentifier, std::string("WDC3")))
         {
             auto reader = WDC3Reader(streamReader);
