@@ -15,7 +15,8 @@ namespace BlizzardDatabaseLib {
         public:
             Build(std::string buildString)
             {
-                auto buildVersionElements = StringExtenstions::Split(buildString, '.');
+                auto delimited = std::string(".");
+                auto buildVersionElements = StringExtenstions::Split(buildString, delimited);
 
                 _expansion = std::atoi(buildVersionElements[0].c_str());
                 _major = std::atoi(buildVersionElements[1].c_str());

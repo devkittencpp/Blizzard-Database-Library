@@ -15,19 +15,24 @@ namespace std {
 class StringExtenstions
 {
 public:
-    static std::vector<std::string> Split(const std::string& s, char delim)
+    static std::vector<std::string> Split(const std::string& s, std::string delimiter)
     {
-        std::vector<std::string> result = std::vector<std::string>();
-        std::stringstream ss(s);
-        std::string item = std::string();
+        size_t pos_start = 0, pos_end, delim_len = delimiter.length();
+        std::string token;
+        std::vector<std::string> res;
 
-        while (std::getline(ss, item, delim))
-        {
-            if (!item.empty())
-                result.push_back(item);
+        while ((pos_end = s.find(delimiter, pos_start)) != std::string::npos) {
+            token = s.substr(pos_start, pos_end - pos_start);
+            pos_start = pos_end + delim_len;
+
+            if (token.empty())
+                continue;
+       
+            res.push_back(token);
         }
 
-        return result;
+        res.push_back(s.substr(pos_start));
+        return res;
     }
 
     static bool Compare(const std::string& lhs, const std::string& rhs)

@@ -68,7 +68,7 @@ namespace BlizzardDatabaseLib
             {
                 auto startIndex = indexOfForeignKeyStart + 1;
                 auto foreignKey = line.substr(startIndex, indexOfForeignKeyEnd - startIndex);
-                auto foreignKeyComponents = StringExtenstions::Split(foreignKey, '::');
+                auto foreignKeyComponents = StringExtenstions::Split(foreignKey, "::");
 
                 if (foreignKeyComponents.size() != 2)
                 {
@@ -155,20 +155,20 @@ namespace BlizzardDatabaseLib
             {
                 auto layoutTokenSize = LAYOUT_TOKEN.size() - 1;
                 auto layoutHashesLine = line.substr(layoutTokenSize);
-                layoutHashes = StringExtenstions::Split(layoutHashesLine, ',');
+                layoutHashes = StringExtenstions::Split(layoutHashesLine, ",");
             }
 
             if (containsBuildToken)
             {
                 auto buildTokenSize = BUILD_TOKEN.size();
                 auto buildsLine = line.substr(buildTokenSize);
-                auto linkedBuilds = StringExtenstions::Split(buildsLine, ',');
+                auto linkedBuilds = StringExtenstions::Split(buildsLine, ",");
 
                 for (auto buildString : linkedBuilds)
                 {
                     if (buildString.find_first_of('-') != std::string::npos)
                     {
-                        auto ranges = StringExtenstions::Split(buildString, '-');
+                        auto ranges = StringExtenstions::Split(buildString, "-");
                         auto minBuild = Structures::Build(ranges[0]);
                         auto maxBuild = Structures::Build(ranges[1]);
 
@@ -200,7 +200,7 @@ namespace BlizzardDatabaseLib
                 {
                     auto indexOfFirstDollerSignAdjusted = indexOfDollerSignStart + 1;
                     auto annotations = line.substr(indexOfFirstDollerSignAdjusted, indexOfDollerSignEnd - indexOfFirstDollerSignAdjusted);
-                    auto allAnnotations = StringExtenstions::Split(annotations, ',');
+                    auto allAnnotations = StringExtenstions::Split(annotations, ",");
 
                     for (auto annotation : allAnnotations)
                     {
@@ -249,7 +249,7 @@ namespace BlizzardDatabaseLib
                     definition.arrLength = std::atoi(enumLengthString.c_str());
                 }
 
-                auto indexOfCommentStart = line.find_first_of('//');
+                auto indexOfCommentStart = line.find_first_of("//");
                 if (indexOfCommentStart != std::string::npos)
                 {
                     auto indexOfCommentStartAdjusted = indexOfCommentStart + 1;
