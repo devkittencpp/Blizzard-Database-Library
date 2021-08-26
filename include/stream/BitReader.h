@@ -1,5 +1,6 @@
 #pragma once
 #include <memory>
+#include <cstring>
 #include <string>
 #include <sstream>
 #include <structures/Types.h>
