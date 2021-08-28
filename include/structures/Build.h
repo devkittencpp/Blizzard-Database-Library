@@ -1,6 +1,6 @@
 #pragma once
 #include <string>
-#include <Extensions.h>
+#include <extensions/StringExtensions.h>
 
 namespace BlizzardDatabaseLib {
     namespace Structures {

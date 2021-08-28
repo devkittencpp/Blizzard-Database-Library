@@ -8,7 +8,7 @@
 #include <vector>
 #include <algorithm>
 #include <regex>
-#include <Extensions.h>
+#include <extensions/StringExtensions.h>
 
 namespace BlizzardDatabaseLib
 {

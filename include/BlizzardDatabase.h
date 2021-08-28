@@ -6,7 +6,7 @@
 #include <BlizzardDatabaseTable.h>
 #include <readers/WDC3Reader.h>
 #include <DatabaseDefinition.h>
-#include <Extensions.h>
+#include <extensions/StringExtensions.h>
 #include <sstream>
 
 namespace BlizzardDatabaseLib

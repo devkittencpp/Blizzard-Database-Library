@@ -3,15 +3,6 @@
 #include <vector>
 #include <string>
 #include <sstream>
-#include <structures/Types.h>
-
-namespace std {
-    template <typename _CharT, typename _Traits>
-    inline basic_ostream<_CharT, _Traits>&
-        tab(basic_ostream<_CharT, _Traits>& __os) {
-        return __os.put(__os.widen('\t'));
-    }
-}
 
 namespace BlizzardDatabaseLib {
     namespace Extension {
@@ -58,14 +49,12 @@ namespace BlizzardDatabaseLib {
                 }
             }
         };
+    }
+}
 
-        class Flag
-        {
-        public:
-            inline static bool HasFlag(const BlizzardDatabaseLib::Flag::DatabaseVersion2Flag& lhs, const BlizzardDatabaseLib::Flag::DatabaseVersion2Flag& rhs) noexcept
-            {
-                return (lhs & rhs) == rhs;
-            }
-        };
+namespace std {
+    template <typename _CharT, typename _Traits>
+    inline basic_ostream<_CharT, _Traits>& tab(basic_ostream<_CharT, _Traits>& __os) {
+        return __os.put(__os.widen('\t'));
     }
 }

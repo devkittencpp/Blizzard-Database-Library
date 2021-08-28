@@ -10,6 +10,8 @@
 #include <stream/BitReader.h>
 #include <structures/Types.h>
 #include <structures/FileStructures.h>
+#include <extensions/StringExtensions.h>
+#include <extensions/FlagExtensions.h>
 
 namespace BlizzardDatabaseLib {
 
