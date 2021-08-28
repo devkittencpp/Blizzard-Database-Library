@@ -4,6 +4,7 @@
 #include <string>
 #include <sstream>
 #include <structures/Types.h>
+#include <flags/Flags.h>
 
 namespace BlizzardDatabaseLib {
     namespace Extension {

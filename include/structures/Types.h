@@ -1,6 +1,7 @@
 #pragma once
 #include <type_traits>
 #include <map>
+#include <flags/Flags.h>
 
 namespace BlizzardDatabaseLib {
     namespace Structures {
