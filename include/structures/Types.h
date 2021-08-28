@@ -3,9 +3,9 @@
 #include <map>
 
 namespace BlizzardDatabaseLib {
-    namespace Structures {
+    namespace Flag {
 
-        enum class DB2Flags : unsigned short
+        enum class DatabaseVersion2Flag : unsigned short
         {
             None = 0x0,
             Sparse = 0x1,
@@ -15,11 +15,16 @@ namespace BlizzardDatabaseLib {
             BitPacked = 0x10
         };
 
-        inline DB2Flags operator & (DB2Flags lhs, DB2Flags rhs)
+        inline DatabaseVersion2Flag operator& (DatabaseVersion2Flag lhs, DatabaseVersion2Flag rhs)
         {
-            using T = std::underlying_type_t <DB2Flags>;
-            return static_cast<DB2Flags>(static_cast<T>(lhs) & static_cast<T>(rhs));
+            using T = std::underlying_type_t<DatabaseVersion2Flag>;
+            return static_cast<DatabaseVersion2Flag>(static_cast<T>(lhs) & static_cast<T>(rhs));
         }
+    }
+}
+
+namespace BlizzardDatabaseLib {
+    namespace Structures {
 
         enum class CompressionType : int
         {
@@ -30,7 +35,6 @@ namespace BlizzardDatabaseLib {
             PalletArray = 4,
             SignedImmediate = 5
         };
-
 
 #pragma pack(push,2)
         struct WDC3Header
@@ -44,7 +48,7 @@ namespace BlizzardDatabaseLib {
             int MinIndex;
             int MaxIndex;
             int Locale;
-            DB2Flags Flags;
+            Flag::DatabaseVersion2Flag Flags;
             unsigned short IdFieldIndex;
             int totalFieldsCount;
             int PackedDataOffset;

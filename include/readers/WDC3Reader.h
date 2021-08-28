@@ -42,42 +42,42 @@ namespace BlizzardDatabaseLib {
         {
             switch (columnMeta.Compression)
             {
-            case Structures::CompressionType::None:
-            {
-                auto bitSize = 32 - fieldMeta.Bits;
-                if (bitSize <= 0)
-                    bitSize = columnMeta.compressionData.Immediate.BitWidth;
+                case Structures::CompressionType::None:
+                {
+                    auto bitSize = 32 - fieldMeta.Bits;
+                    if (bitSize <= 0)
+                        bitSize = columnMeta.compressionData.Immediate.BitWidth;
 
-                return reader.ReadValue64(bitSize).As<T>();
-            }
-            case  Structures::CompressionType::SignedImmediate:
-            {
-                return reader.ReadSignedValue64(columnMeta.compressionData.Immediate.BitWidth).As<T>();
-            }
-            case  Structures::CompressionType::Immediate:
-            {
-                return reader.ReadValue64(columnMeta.compressionData.Immediate.BitWidth).As<T>();
-            }
-            case  Structures::CompressionType::Common:
-            {
-                if (commonData.contains(Id))
-                    return commonData.at(Id).As<T>();
+                    return reader.ReadValue64(bitSize).As<T>();
+                }
+                case  Structures::CompressionType::SignedImmediate:
+                {
+                    return reader.ReadSignedValue64(columnMeta.compressionData.Immediate.BitWidth).As<T>();
+                }
+                case  Structures::CompressionType::Immediate:
+                {
+                    return reader.ReadValue64(columnMeta.compressionData.Immediate.BitWidth).As<T>();
+                }
+                case  Structures::CompressionType::Common:
+                {
+                    if (commonData.contains(Id))
+                        return commonData.at(Id).As<T>();
 
-                return columnMeta.compressionData.Common.DefaultValue.As<T>();
-            }
-            case  Structures::CompressionType::Pallet:
-            {
-                auto value = reader.ReadUint32(columnMeta.compressionData.Pallet.BitWidth);
-                return palletData[value].As<T>();
-            }
-            case  Structures::CompressionType::PalletArray:
-            {
-                if (columnMeta.compressionData.Pallet.Cardinality != 1)
-                    break;
+                    return columnMeta.compressionData.Common.DefaultValue.As<T>();
+                }
+                case  Structures::CompressionType::Pallet:
+                {
+                    auto value = reader.ReadUint32(columnMeta.compressionData.Pallet.BitWidth);
+                    return palletData[value].As<T>();
+                }
+                case  Structures::CompressionType::PalletArray:
+                {
+                    if (columnMeta.compressionData.Pallet.Cardinality != 1)
+                        break;
 
-                auto palletArrayIndex = reader.ReadUint32(columnMeta.compressionData.Pallet.BitWidth);
-                return palletData[palletArrayIndex].As<T>();
-            }
+                    auto palletArrayIndex = reader.ReadUint32(columnMeta.compressionData.Pallet.BitWidth);
+                    return palletData[palletArrayIndex].As<T>();
+                }
             }
 
             return static_cast<T>(0);
@@ -90,31 +90,31 @@ namespace BlizzardDatabaseLib {
             auto vector = std::vector<T>();
             switch (columnMeta.Compression)
             {
-            case  Structures::CompressionType::None:
-            {
-                auto bitSize = 32 - fieldMeta.Bits;
-                if (bitSize <= 0)
-                    bitSize = columnMeta.compressionData.Immediate.BitWidth;
-
-                auto entires = columnMeta.Size / bitSize;
-                for (auto i = 0; i < entires; i++)
+                case  Structures::CompressionType::None:
                 {
-                    auto entry = reader.ReadValue64(bitSize).As<T>();
-                    vector.push_back(entry);
-                }
-                break;
-            }
-            case  Structures::CompressionType::PalletArray:
-            {
-                auto cardinality = columnMeta.compressionData.Pallet.Cardinality;
-                auto index = reader.ReadUint32(columnMeta.compressionData.Pallet.BitWidth);
+                    auto bitSize = 32 - fieldMeta.Bits;
+                    if (bitSize <= 0)
+                        bitSize = columnMeta.compressionData.Immediate.BitWidth;
 
-                for (auto i = 0; i < cardinality; i++)
-                {
-                    auto data = palletData[i + cardinality * (index)].As<T>();
-                    vector.push_back(data);
+                    auto entires = columnMeta.Size / bitSize;
+                    for (auto i = 0; i < entires; i++)
+                    {
+                        auto entry = reader.ReadValue64(bitSize).As<T>();
+                        vector.push_back(entry);
+                    }
+                    break;
                 }
-            }
+                case  Structures::CompressionType::PalletArray:
+                {
+                    auto cardinality = columnMeta.compressionData.Pallet.Cardinality;
+                    auto index = reader.ReadUint32(columnMeta.compressionData.Pallet.BitWidth);
+
+                    for (auto i = 0; i < cardinality; i++)
+                    {
+                        auto data = palletData[i + cardinality * (index)].As<T>();
+                        vector.push_back(data);
+                    }
+                }
             }
             return vector;
         }
@@ -125,20 +125,20 @@ namespace BlizzardDatabaseLib {
             auto vector = std::vector<std::string>();
             switch (columnMeta.Compression)
             {
-            case Structures::CompressionType::None:
-            {
-                auto bitSize = 32 - fieldMeta.Bits;
-                if (bitSize <= 0)
-                    bitSize = columnMeta.compressionData.Immediate.BitWidth;
-
-                auto entires = columnMeta.Size / bitSize;
-                for (auto i = 0; i < entires; i++)
+                case Structures::CompressionType::None:
                 {
-                    auto entryIndex = (reader.Position >> 3) + offset + reader.ReadValue64(bitSize).As<int>();
-                    auto string = stringLookup.at(entryIndex);
-                    vector.push_back(string);
+                    auto bitSize = 32 - fieldMeta.Bits;
+                    if (bitSize <= 0)
+                        bitSize = columnMeta.compressionData.Immediate.BitWidth;
+
+                    auto entires = columnMeta.Size / bitSize;
+                    for (auto i = 0; i < entires; i++)
+                    {
+                        auto entryIndex = (reader.Position >> 3) + offset + reader.ReadValue64(bitSize).As<int>();
+                        auto string = stringLookup.at(entryIndex);
+                        vector.push_back(string);
+                    }
                 }
-            }
             }
 
             return vector;

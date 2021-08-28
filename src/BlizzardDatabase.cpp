@@ -34,7 +34,7 @@ namespace BlizzardDatabaseLib
         std::cout << "File Header Format: " << fileFormatIdentifier << std::endl;
 
         std::vector<Structures::BlizzardDatabaseRow> rows;
-        if (StringExtenstions::Compare(fileFormatIdentifier, std::string("WDC3")))
+        if (Extension::String::Compare(fileFormatIdentifier, std::string("WDC3")))
         {
             auto reader = WDC3Reader(streamReader);
             rows = reader.ReadRows(tableDefinition);

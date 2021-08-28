@@ -71,7 +71,7 @@ namespace BlizzardDatabaseLib
         {
             _streamReader.Jump(section.FileOffset);
 
-            if (!((Header.Flags & Structures::DB2Flags::Sparse) == Structures::DB2Flags::Sparse))
+            if (!Extension::Flag::HasFlag(Header.Flags, Flag::DatabaseVersion2Flag::Sparse))
             {
                 recordBlockSize = section.NumRecords * Header.RecordSize;
                 recordDataBlock = _streamReader.ReadBlock(recordBlockSize);
@@ -169,7 +169,7 @@ namespace BlizzardDatabaseLib
             for (int i = 0; i < section.NumRecords; i++)
             {
                 auto bitReader = Stream::BitReader(recordDataBlock, recordBlockSize);
-                if ((Header.Flags & Structures::DB2Flags::Sparse) == Structures::DB2Flags::Sparse)
+                if (Extension::Flag::HasFlag(Header.Flags, Flag::DatabaseVersion2Flag::Sparse))
                 {
                     //std::cout << "Sparse" << std::endl;
                     bitReader.Position = position;
@@ -219,7 +219,7 @@ namespace BlizzardDatabaseLib
 
                     row.Columns.emplace(column.name, blizzColumn);
 
-                    if (StringExtenstions::Compare(type, "int"))
+                    if (Extension::String::Compare(type, "int"))
                     {
                         if (column.arrLength > 0)
                         {
@@ -253,7 +253,7 @@ namespace BlizzardDatabaseLib
                         //std::cout << type << " " << (int)columnMeta.CompressionType << " " << column.name << " " << 8 << " => " << value << std::endl;
                     }
 
-                    if (StringExtenstions::Compare(type, "float"))
+                    if (Extension::String::Compare(type, "float"))
                     {
                         if (column.arrLength > 0)
                         {
@@ -272,7 +272,7 @@ namespace BlizzardDatabaseLib
                         }
                     }
 
-                    if (StringExtenstions::Compare(type, "string") || StringExtenstions::Compare(type, "locstring"))
+                    if (Extension::String::Compare(type, "string") || Extension::String::Compare(type, "locstring"))
                     {
                         if (column.arrLength > 0)
                         {
@@ -282,7 +282,7 @@ namespace BlizzardDatabaseLib
                             continue;
                         }
 
-                        if ((Header.Flags & Structures::DB2Flags::Sparse) == Structures::DB2Flags::Sparse)
+                        if (Extension::Flag::HasFlag(Header.Flags,Flag::DatabaseVersion2Flag::Sparse))
                         {
                             auto value = bitReader.ReadNullTermintingString();
                             row.Columns[column.name].Value = value;

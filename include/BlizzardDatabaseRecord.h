@@ -1,6 +1,9 @@
 #pragma once
 
-class BlizzardDatabaseRecord
-{
+namespace BlizzardDatabaseLib {
+	class BlizzardDatabaseRecord
+	{
 
-};
+	};
+}
+

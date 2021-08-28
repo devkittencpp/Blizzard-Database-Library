@@ -68,7 +68,7 @@ namespace BlizzardDatabaseLib
             {
                 auto startIndex = indexOfForeignKeyStart + 1;
                 auto foreignKey = line.substr(startIndex, indexOfForeignKeyEnd - startIndex);
-                auto foreignKeyComponents = StringExtenstions::Split(foreignKey, "::");
+                auto foreignKeyComponents = Extension::String::Split(foreignKey, "::");
 
                 if (foreignKeyComponents.size() != 2)
                 {
@@ -155,20 +155,20 @@ namespace BlizzardDatabaseLib
             {
                 auto layoutTokenSize = LAYOUT_TOKEN.size() - 1;
                 auto layoutHashesLine = line.substr(layoutTokenSize);
-                layoutHashes = StringExtenstions::Split(layoutHashesLine, ",");
+                layoutHashes = Extension::String::Split(layoutHashesLine, ",");
             }
 
             if (containsBuildToken)
             {
                 auto buildTokenSize = BUILD_TOKEN.size();
                 auto buildsLine = line.substr(buildTokenSize);
-                auto linkedBuilds = StringExtenstions::Split(buildsLine, ",");
+                auto linkedBuilds = Extension::String::Split(buildsLine, ",");
 
                 for (auto buildString : linkedBuilds)
                 {
                     if (buildString.find_first_of('-') != std::string::npos)
                     {
-                        auto ranges = StringExtenstions::Split(buildString, "-");
+                        auto ranges = Extension::String::Split(buildString, "-");
                         auto minBuild = Structures::Build(ranges[0]);
                         auto maxBuild = Structures::Build(ranges[1]);
 
@@ -200,15 +200,15 @@ namespace BlizzardDatabaseLib
                 {
                     auto indexOfFirstDollerSignAdjusted = indexOfDollerSignStart + 1;
                     auto annotations = line.substr(indexOfFirstDollerSignAdjusted, indexOfDollerSignEnd - indexOfFirstDollerSignAdjusted);
-                    auto allAnnotations = StringExtenstions::Split(annotations, ",");
+                    auto allAnnotations = Extension::String::Split(annotations, ",");
 
                     for (auto annotation : allAnnotations)
                     {
-                        if (StringExtenstions::Compare(annotation, "id"))
+                        if (Extension::String::Compare(annotation, "id"))
                             definition.isID = true;
-                        if (StringExtenstions::Compare(annotation, "noninline"))
+                        if (Extension::String::Compare(annotation, "noninline"))
                             definition.IsInline = false;
-                        if (StringExtenstions::Compare(annotation, "relation"))
+                        if (Extension::String::Compare(annotation, "relation"))
                             definition.isRelation = true;
                     }
 
