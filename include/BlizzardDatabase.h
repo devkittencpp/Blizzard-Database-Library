@@ -14,11 +14,11 @@ namespace BlizzardDatabaseLib
 	class BlizzardDatabase
 	{
 	private:
-		std::string _databaseFilesLocation;
-		std::string _databaseDefinitionFilesLocation;
+		const std::string _databaseFilesLocation;
+		const std::string _databaseDefinitionFilesLocation;
 	public:
-		BlizzardDatabase(std::string databaseCollectionDirectory, std::string databaseDefinitionDirectory);
+		BlizzardDatabase(const std::string& databaseCollectionDirectory, const std::string& databaseDefinitionDirectory);
 
-		BlizzardDatabaseTable ReadTable(std::string tableName);
+		BlizzardDatabaseTable ReadTable(const std::string& tableName, const Structures::Build& build);
 	};
 }

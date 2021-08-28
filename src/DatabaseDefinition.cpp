@@ -3,7 +3,7 @@
 namespace BlizzardDatabaseLib
 {
 
-    DatabaseDefinition::DatabaseDefinition(std::string databaseDefinitionsFile) : _databaseDefinitionFile(databaseDefinitionsFile)
+    DatabaseDefinition::DatabaseDefinition(const std::string& databaseDefinitionsFile) : _databaseDefinitionFile(databaseDefinitionsFile)
     {
 
     }
@@ -292,7 +292,7 @@ namespace BlizzardDatabaseLib
         return databaseDefinition;
     }
 
-    bool DatabaseDefinition::For(Structures::Build& build, Structures::VersionDefinition& definition)
+    bool DatabaseDefinition::For(const Structures::Build& build, Structures::VersionDefinition& definition)
     {
         auto definitions = Read();
 

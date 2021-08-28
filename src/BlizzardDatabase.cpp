@@ -2,16 +2,14 @@
 
 namespace BlizzardDatabaseLib
 {
-    BlizzardDatabase::BlizzardDatabase(std::string databaseCollectionDirectory, std::string databaseDefinitionDirectory) :
+    BlizzardDatabase::BlizzardDatabase(const std::string& databaseCollectionDirectory, const std::string& databaseDefinitionDirectory) :
         _databaseFilesLocation(databaseCollectionDirectory), _databaseDefinitionFilesLocation(databaseDefinitionDirectory)
     {
 
     }
 
-    BlizzardDatabaseTable BlizzardDatabase::ReadTable(std::string tableName)
+    BlizzardDatabaseTable BlizzardDatabase::ReadTable(const std::string& tableName, const Structures::Build& build)
     {
-        auto build = Structures::Build("9.1.0.39584");
-
         auto absoluteFilePathOfDatabaseTable = _databaseFilesLocation + "\\" + tableName + ".db2";
         auto absoluteFilePathOfDatabaseTableDefinition = _databaseDefinitionFilesLocation + "\\" + tableName + ".dbd";
 

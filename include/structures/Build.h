@@ -13,7 +13,7 @@ namespace BlizzardDatabaseLib {
             short _minor;
             unsigned int build;
         public:
-            Build(std::string buildString)
+            Build(const std::string& buildString)
             {
                 auto delimited = std::string(".");
                 auto buildVersionElements = Extension::String::Split(buildString, delimited);

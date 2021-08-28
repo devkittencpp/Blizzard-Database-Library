@@ -15,10 +15,10 @@ namespace BlizzardDatabaseLib
 	class DatabaseDefinition
 	{
 	private:
-		std::string _databaseDefinitionFile;
+		const std::string& _databaseDefinitionFile;
 	public:
-		DatabaseDefinition(std::string databaseDefinitionsDirectory);
+		DatabaseDefinition(const std::string& databaseDefinitionsDirectory);
 		Structures::DBDefinition Read();
-		bool For(Structures::Build& build, Structures::VersionDefinition& definition);
+		bool For(const Structures::Build& build, Structures::VersionDefinition& definition);
 	};
 }

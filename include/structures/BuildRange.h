@@ -12,9 +12,9 @@ namespace BlizzardDatabaseLib {
         public:
             BuildRange(Build minBuild, Build maxBuild) : _minBuild(minBuild), _maxBuild(maxBuild) {}
 
-            bool Contains(Build& build)
+            bool Contains(const Build& build)
             {
-                if (build > _minBuild && build < _maxBuild)
+                if (_minBuild < build && _maxBuild > build)
                     return true;
                 return false;
             }

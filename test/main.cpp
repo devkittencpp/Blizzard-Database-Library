@@ -43,9 +43,10 @@ int main(int argc, char* argv[])
         std::cout << "No Defintion Directory Found" << std::endl;
         std::cout << "Expected Argument -DDP:<Path>" << std::endl;
     }
-    
+
+    auto build = BlizzardDatabaseLib::Structures::Build("9.1.0.39584");
     auto blizzardDatabase = BlizzardDatabaseLib::BlizzardDatabase(dbcFileDirectory, dbdFileDirectory);
-    auto mapTable = blizzardDatabase.ReadTable("map");
+    auto mapTable = blizzardDatabase.ReadTable("map", build);
 
     //auto achievementTable = blizzardDatabase.ReadTable("achievement");
     //auto areapoiTable = blizzardDatabase.ReadTable("areapoi");
