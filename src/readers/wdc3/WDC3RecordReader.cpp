@@ -111,9 +111,10 @@ namespace BlizzardDatabaseLib {
                     }
                     else
                     {
-                        auto lookupId = GetFieldValue<int>(Id, _bitReader, fieldMeta, columnMeta, palletData, commonData);
+                     
                         auto readerOffset = (indexOfId * _fileHeader.RecordSize) - (_fileHeader.RecordsCount * _fileHeader.RecordSize);
                         auto offsetPosition = readerOffset + (_bitReader.Position >> 3);     
+                        auto lookupId = GetFieldValue<int>(Id, _bitReader, fieldMeta, columnMeta, palletData, commonData);
                         auto stringLookupIndex = offsetPosition + (int)lookupId;
 
                         _streamReader->Jump(startOfStringTable + stringLookupIndex);

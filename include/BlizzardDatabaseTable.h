@@ -20,7 +20,7 @@ namespace BlizzardDatabaseLib {
 
         void Record(unsigned int id)
         {
-            auto records = _tableReader->RecordById(id);
+            auto record = _tableReader->RecordById(id);
         }
 
         void Records()

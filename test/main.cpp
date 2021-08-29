@@ -53,7 +53,8 @@ int main(int argc, char* argv[])
     auto mapTable = blizzardDatabase.LoadTable(table, build);
 
     mapTable.Record(2245); //Deepwind Gorge
-
+    mapTable.Record(30); //Alterac Valley
+    mapTable.Record(37); //Azshara Crater
     auto itemTable = blizzardDatabase.LoadTable(sparseTable, build);
 
     //itemTable.Record(187111); //Memory of Blind Faith
