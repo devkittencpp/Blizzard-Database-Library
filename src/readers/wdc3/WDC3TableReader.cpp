@@ -16,7 +16,9 @@ namespace BlizzardDatabaseLib {
         void WDC3TableReader::LoadTableStructure()
         {
             auto length = _streamReader->Length();
-            if (length < _headerSize)
+            auto headerSize = sizeof(Structures::WDC3Header);
+
+            if (length < headerSize)
             {
                 std::cout << "Error Occured While Parsing WDC3 Header, Header to short." << std::endl;
                 return;
@@ -25,7 +27,7 @@ namespace BlizzardDatabaseLib {
             _streamReader->Jump(0);
 
             auto magicNumber = _streamReader->Read<unsigned int>();
-            if (magicNumber != WDC3FmtSig)
+            if (magicNumber != Flag::TableFormatSignatures::WDC3_FMT_SIGNATURE)
             {
                 std::cout << "Error Occured While Parsing WDC3 Header, Format Signature doesnt Match." << std::endl;
                 return;

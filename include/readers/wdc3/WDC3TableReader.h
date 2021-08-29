@@ -6,6 +6,7 @@
 #include <vector>
 #include <map>
 #include <sstream>
+#include <flags/TableFormatSignatures.h>
 #include <readers/IBlizzardTableReader.h>
 #include <readers/wdc3/WDC3RecordReader.h>
 #include <stream/StreamReader.h>
@@ -21,13 +22,10 @@ namespace BlizzardDatabaseLib {
     namespace Reader {
 
         class WDC3TableReader : public IBlizzardTableReader
-        {
-            const int _headerSize = 72;
-            const unsigned int WDC3FmtSig = 0x33434457; //TODO: move to seperate structure
+        {       
             std::shared_ptr<Stream::StreamReader> _streamReader;
 
             Structures::WDC3Header Header;
-
             std::vector<Structures::WDC3Section> Sections;
             std::vector<Structures::FieldMeta> Meta;
             std::vector<Structures::ColumnMetaData> ColumnMeta;
