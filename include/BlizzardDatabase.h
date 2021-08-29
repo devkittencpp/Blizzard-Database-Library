@@ -4,7 +4,6 @@
 #include <fstream>
 #include <filesystem>
 #include <BlizzardDatabaseTable.h>
-#include <readers/wdc3/WDC3Reader.h>
 #include <readers/BlizzardTableReaderFactory.h>
 #include <DatabaseDefinition.h>
 #include <extensions/StringExtensions.h>

@@ -43,6 +43,7 @@ namespace BlizzardDatabaseLib {
             void LoadTableStructure();
             Structures::BlizzardDatabaseRow RecordById(unsigned int Id) override;
             std::vector<Structures::BlizzardDatabaseRow> Records() override;
+            std::size_t RecordCount() override;
         };
     }
 }

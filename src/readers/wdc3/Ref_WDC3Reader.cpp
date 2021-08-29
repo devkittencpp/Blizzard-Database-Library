@@ -1,4 +1,4 @@
-#include <readers/wdc3/WDC3Reader.h>
+#include <readers/wdc3/ref_WDC3Reader.h>
 
 namespace BlizzardDatabaseLib
 {
