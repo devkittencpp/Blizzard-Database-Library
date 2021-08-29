@@ -16,7 +16,7 @@ namespace BlizzardDatabaseLib
         auto magicNumber = _streamReader.Read<unsigned int>();
         if (magicNumber != WDC3FmtSig)
         {
-            std::cout << "Error Occured While Parsing WDC3 Header, Magic doesnt Match." << std::endl;
+            std::cout << "Error Occured While Parsing WDC3 Header, Format Signature doesnt Match." << std::endl;
             return;
         }
 
@@ -60,7 +60,7 @@ namespace BlizzardDatabaseLib
 
     std::vector<Structures::BlizzardDatabaseRow> WDC3Reader::ReadRows(Structures::VersionDefinition& versionDefinition)
     {
-        auto previousStringTableSize = 0;
+        //auto previousStringTableSize = 0;
         auto previousRecordCount = 0;
         auto recordBlockSize = 0;
         std::unique_ptr<char[]> recordDataBlock = nullptr;
@@ -69,25 +69,24 @@ namespace BlizzardDatabaseLib
         auto length = _streamReader.Length();
         for (auto& section : Sections)
         {
+            auto recordBlockSize = section.NumRecords * Header.RecordSize;
+            auto startOfStringTable = section.FileOffset + (recordBlockSize);
             _streamReader.Jump(section.FileOffset);
 
             if (!Extension::Flag::HasFlag(Header.Flags, Flag::DatabaseVersion2Flag::Sparse))
-            {
-                recordBlockSize = section.NumRecords * Header.RecordSize;
+            {          
                 recordDataBlock = _streamReader.ReadBlock(recordBlockSize);
 
-                for (auto i = 0; i < section.StringTableSize;)
-                {
-                    auto lastPosition = _streamReader.Position(); //56184
-                    auto string = _streamReader.ReadString();
-                    StringTable[i + previousStringTableSize] = string;
-
-                    i += _streamReader.Position() - lastPosition;
-
-                    //std::cout << lastPosition << " " << i << " " << string << std::endl;
-                }
-
-                previousStringTableSize += section.StringTableSize;
+                //for (auto i = 0; i < section.StringTableSize;)
+                //{
+                //    auto lastPosition = _streamReader.Position(); //56184
+                //    auto string = _streamReader.ReadString();
+                //    StringTable[i + previousStringTableSize] = string;
+                //
+                //    i += _streamReader.Position() - lastPosition;
+                //}
+                //
+                //previousStringTableSize += section.StringTableSize;
             }
             else
             {
@@ -296,7 +295,11 @@ namespace BlizzardDatabaseLib
                             auto offsetPosition = readerOffset + (bitReader.Position >> 3);
                             auto lookupId = GetFieldValue<int>(Id, bitReader, StringTable, fieldMeta, columnMeta, palletData, commonData);
                             auto stringLookupIndex = offsetPosition + (int)lookupId;
-                            auto value = StringTable.at(stringLookupIndex);
+
+                            _streamReader.Jump(startOfStringTable + stringLookupIndex);
+
+                            auto value = _streamReader.ReadString();
+               
                             row.Columns[column.name].Value = value;
 
                             //std::cout << type << " " << (int)columnMeta.CompressionType << " " << column.name << " " << fieldMeta.Bits << " => " << value << std::endl;
