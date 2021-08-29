@@ -6,6 +6,7 @@
 #include <vector>
 #include <map>
 #include <sstream>
+#include <readers/IBlizzardTableReader.h>
 #include <stream/StreamReader.h>
 #include <stream/BitReader.h>
 #include <structures/Types.h>
@@ -16,6 +17,7 @@
 
 namespace BlizzardDatabaseLib {
 
+  
     class WDC3Reader
     {
     private:

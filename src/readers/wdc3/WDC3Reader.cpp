@@ -1,4 +1,4 @@
-#include <readers/WDC3Reader.h>
+#include <readers/wdc3/WDC3Reader.h>
 
 namespace BlizzardDatabaseLib
 {
@@ -68,7 +68,7 @@ namespace BlizzardDatabaseLib
         {
             auto recordBlockSize = section.NumRecords * Header.RecordSize;
             auto startOfStringTable = section.FileOffset + (recordBlockSize);
-
+            auto endOfStringTable = startOfStringTable + section.StringTableSize;
             _streamReader.Jump(section.FileOffset);
 
             //Read Record MemoryBlock
@@ -83,6 +83,7 @@ namespace BlizzardDatabaseLib
             else //If record data is not fixed width
             {
                 recordDataBlock = _streamReader.ReadBlock(recordBlockSize);
+                _streamReader.Jump(endOfStringTable);
             }
 
             //Skip encryption
@@ -164,6 +165,8 @@ namespace BlizzardDatabaseLib
                 {
                     bitReader.Offset = i * recordSize;
                 }
+
+                //Reader Record()
 
                 auto Id = section.IndexDataSize != 0 ? indexData[i] : -1;
                 auto columns = versionDefinition.columnDefinitions;

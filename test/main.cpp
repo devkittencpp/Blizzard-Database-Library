@@ -46,11 +46,21 @@ int main(int argc, char* argv[])
 
     const auto& build = BlizzardDatabaseLib::Structures::Build("9.1.0.39584");
     const auto& table = std::string("map");
+    const auto& sparseTable = std::string("ItemSparse");
+
 
     auto blizzardDatabase = BlizzardDatabaseLib::BlizzardDatabase(dbcFileDirectory, dbdFileDirectory);
     auto mapTable = blizzardDatabase.LoadTable(table, build);
 
+    mapTable.Record(2245); //Deepwind Gorge
+
+    auto itemTable = blizzardDatabase.LoadTable(sparseTable, build);
+
+    //itemTable.Record(187111); //Memory of Blind Faith
+
     blizzardDatabase.UnloadTable(table);
+    blizzardDatabase.UnloadTable(sparseTable);
+
 
     //auto achievementTable = blizzardDatabase.LoadTable("achievement");
     //auto areapoiTable = blizzardDatabase.LoadTable("areapoi");

@@ -6,6 +6,7 @@ namespace BlizzardDatabaseLib
         _databaseFilesLocation(databaseCollectionDirectory), _databaseDefinitionFilesLocation(databaseDefinitionDirectory)
     {
         _loadedTables = std::map<std::string, std::shared_ptr<BlizzardDatabaseTable>>();
+        _blizzardTableReaderFactory = Reader::BlizzardTableReaderFactory();
     }
 
     const BlizzardDatabaseTable& BlizzardDatabase::LoadTable(const std::string& tableName, const Structures::Build& build)
@@ -23,29 +24,20 @@ namespace BlizzardDatabaseLib
         if (tableFound == false)
             std::cout << "Verion Not found" << std::endl;
 
-        std::ifstream fileStream;
-        fileStream.open(absoluteFilePathOfDatabaseTable, std::ifstream::binary);
+        auto fileStream = std::make_shared<std::ifstream>();
+        fileStream->open(absoluteFilePathOfDatabaseTable, std::ifstream::binary);
 
-        auto streamReader = Stream::StreamReader(fileStream);
-        auto fileFormatIdentifier = streamReader.ReadString(4);
+        auto streamReader = std::make_shared<Stream::StreamReader>(fileStream);
+        auto fileFormatIdentifier = streamReader->ReadString(4);
 
-        if (!fileStream.is_open())
-            std::cout << "FileClosed?" << std::endl;
+        auto tableReader = _blizzardTableReaderFactory.For(streamReader, tableDefinition,fileFormatIdentifier);
 
-        std::cout << "File Header Format: " << fileFormatIdentifier << std::endl;
-
-        std::vector<Structures::BlizzardDatabaseRow> rows;
-        if (Extension::String::Compare(fileFormatIdentifier, std::string("WDC3")))
-        {
-            auto reader = WDC3Reader(streamReader);
-            rows = reader.ReadRows(tableDefinition);
-        }
- 
-        auto constructedTable = std::make_shared<BlizzardDatabaseTable>(std::move(rows));
+        auto constructedTable = std::make_shared<BlizzardDatabaseTable>(tableReader);
+        constructedTable->LoadTableStructure();
 
         _loadedTables.emplace(tableName, constructedTable);
 
-        fileStream.close();
+        //fileStream.close(); Reader Needs to own it's own stream 
 
         return *constructedTable;
     }
