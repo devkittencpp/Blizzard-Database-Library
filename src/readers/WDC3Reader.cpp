@@ -60,41 +60,28 @@ namespace BlizzardDatabaseLib
 
     std::vector<Structures::BlizzardDatabaseRow> WDC3Reader::ReadRows(Structures::VersionDefinition& versionDefinition)
     {
-        //auto previousStringTableSize = 0;
         auto previousRecordCount = 0;
-        auto recordBlockSize = 0;
         std::unique_ptr<char[]> recordDataBlock = nullptr;
         std::vector<Structures::BlizzardDatabaseRow> rows;
 
-        auto length = _streamReader.Length();
         for (auto& section : Sections)
         {
             auto recordBlockSize = section.NumRecords * Header.RecordSize;
             auto startOfStringTable = section.FileOffset + (recordBlockSize);
             _streamReader.Jump(section.FileOffset);
 
-            if (!Extension::Flag::HasFlag(Header.Flags, Flag::DatabaseVersion2Flag::Sparse))
-            {          
-                recordDataBlock = _streamReader.ReadBlock(recordBlockSize);
-
-                //for (auto i = 0; i < section.StringTableSize;)
-                //{
-                //    auto lastPosition = _streamReader.Position(); //56184
-                //    auto string = _streamReader.ReadString();
-                //    StringTable[i + previousStringTableSize] = string;
-                //
-                //    i += _streamReader.Position() - lastPosition;
-                //}
-                //
-                //previousStringTableSize += section.StringTableSize;
-            }
-            else
-            {
+            //Read Record MemoryBlock
+            if (Extension::Flag::HasFlag(Header.Flags, Flag::DatabaseVersion2Flag::Sparse)) //If the data is Fixed record Width
+            {         
                 recordBlockSize = section.OffsetRecordsEndOffset - section.FileOffset;
                 recordDataBlock = _streamReader.ReadBlock(recordBlockSize);
 
                 if (_streamReader.Position() != section.OffsetRecordsEndOffset)
-                    std::cout << "Over/Under Read Section" << std::endl;
+                    std::cout << "Over/Under Read Section" << std::endl;      
+            }
+            else //If record data is not fixed width
+            {
+                recordDataBlock = _streamReader.ReadBlock(recordBlockSize);
             }
 
             //Skip encryption
@@ -105,7 +92,6 @@ namespace BlizzardDatabaseLib
             }
 
             auto indexData = _streamReader.ReadArray<int>(section.IndexDataSize / 4);
-
             if (indexData.size() > 0) {
                 //fill index 0-X based on records
             }
@@ -170,7 +156,6 @@ namespace BlizzardDatabaseLib
                 auto bitReader = Stream::BitReader(recordDataBlock, recordBlockSize);
                 if (Extension::Flag::HasFlag(Header.Flags, Flag::DatabaseVersion2Flag::Sparse))
                 {
-                    //std::cout << "Sparse" << std::endl;
                     bitReader.Position = position;
                     position += sparseDataEntries[i].Size * 8;
                 }
