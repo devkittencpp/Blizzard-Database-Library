@@ -37,8 +37,6 @@ namespace BlizzardDatabaseLib
 
         _loadedTables.emplace(tableName, constructedTable);
 
-        //fileStream.close(); Reader Needs to own it's own stream 
-
         return *constructedTable;
     }
 

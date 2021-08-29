@@ -1,4 +1,5 @@
 #pragma once
+#include <fstream>
 #include <memory>
 #include <iostream>
 #include <vector>
@@ -13,9 +14,9 @@ namespace BlizzardDatabaseLib {
         class StreamReader
         {
         private:
-            std::shared_ptr<std::istream> _underlyingStream;
+            std::shared_ptr<std::ifstream> _underlyingStream;
         public:
-            StreamReader(std::shared_ptr<std::istream> stream);
+            StreamReader(std::shared_ptr<std::ifstream> stream);
             ~StreamReader();
             template <typename T> T Read()
             {
