@@ -1,15 +1,18 @@
 #pragma once
-#include<vector>
+#include <vector>
 #include "BlizzardDatabaseRecord.h"
-
+#include <structures/FileStructures.h>
+#include <string>
 namespace BlizzardDatabaseLib {
 
     class BlizzardDatabaseTable
     {
     private:
-        std::vector<BlizzardDatabaseRecord> _records;
+        std::vector<Structures::BlizzardDatabaseRow> _records;
     public:
-        BlizzardDatabaseTable() = default;
+        BlizzardDatabaseTable(std::vector<Structures::BlizzardDatabaseRow> records) : _records(records)
+        {
+        }
     };
 }
 

@@ -44,16 +44,20 @@ int main(int argc, char* argv[])
         std::cout << "Expected Argument -DDP:<Path>" << std::endl;
     }
 
-    auto build = BlizzardDatabaseLib::Structures::Build("9.1.0.39584");
-    auto blizzardDatabase = BlizzardDatabaseLib::BlizzardDatabase(dbcFileDirectory, dbdFileDirectory);
-    auto mapTable = blizzardDatabase.ReadTable("map", build);
+    const auto& build = BlizzardDatabaseLib::Structures::Build("9.1.0.39584");
+    const auto& table = std::string("map");
 
-    //auto achievementTable = blizzardDatabase.ReadTable("achievement");
-    //auto areapoiTable = blizzardDatabase.ReadTable("areapoi");
-    //auto BattlePetEffectPropertiesTable = blizzardDatabase.ReadTable("BattlePetEffectProperties");
-    //auto CharacterLoadoutTable = blizzardDatabase.ReadTable("CharacterLoadout");
-    //auto ItemSparseTable = blizzardDatabase.ReadTable("ItemSparse");
-    //auto UIDungeonScoreRarityTable = blizzardDatabase.ReadTable("UIDungeonScoreRarity");
+    auto blizzardDatabase = BlizzardDatabaseLib::BlizzardDatabase(dbcFileDirectory, dbdFileDirectory);
+    auto mapTable = blizzardDatabase.LoadTable(table, build);
+
+    blizzardDatabase.UnloadTable(table);
+
+    //auto achievementTable = blizzardDatabase.LoadTable("achievement");
+    //auto areapoiTable = blizzardDatabase.LoadTable("areapoi");
+    //auto BattlePetEffectPropertiesTable = blizzardDatabase.LoadTable("BattlePetEffectProperties");
+    //auto CharacterLoadoutTable = blizzardDatabase.LoadTable("CharacterLoadout");
+    //auto ItemSparseTable = blizzardDatabase.LoadTable("ItemSparse");
+    //auto UIDungeonScoreRarityTable = blizzardDatabase.LoadTable("UIDungeonScoreRarity");
 
     return 0;
 }

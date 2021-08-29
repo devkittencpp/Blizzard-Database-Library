@@ -5,11 +5,14 @@ namespace BlizzardDatabaseLib
     BlizzardDatabase::BlizzardDatabase(const std::string& databaseCollectionDirectory, const std::string& databaseDefinitionDirectory) :
         _databaseFilesLocation(databaseCollectionDirectory), _databaseDefinitionFilesLocation(databaseDefinitionDirectory)
     {
-
+        _loadedTables = std::map<std::string, std::shared_ptr<BlizzardDatabaseTable>>();
     }
 
-    BlizzardDatabaseTable BlizzardDatabase::ReadTable(const std::string& tableName, const Structures::Build& build)
+    const BlizzardDatabaseTable& BlizzardDatabase::LoadTable(const std::string& tableName, const Structures::Build& build)
     {
+        if (_loadedTables.contains(tableName))
+            std::cout << "Table Already Loaded" << std::endl;
+
         auto absoluteFilePathOfDatabaseTable = _databaseFilesLocation + "\\" + tableName + ".db2";
         auto absoluteFilePathOfDatabaseTableDefinition = _databaseDefinitionFilesLocation + "\\" + tableName + ".dbd";
 
@@ -37,9 +40,25 @@ namespace BlizzardDatabaseLib
             auto reader = WDC3Reader(streamReader);
             rows = reader.ReadRows(tableDefinition);
         }
+ 
+        auto constructedTable = std::make_shared<BlizzardDatabaseTable>(std::move(rows));
+
+        _loadedTables.emplace(tableName, constructedTable);
 
         fileStream.close();
 
-        return BlizzardDatabaseTable();
+        return *constructedTable;
+    }
+
+    void BlizzardDatabase::UnloadTable(const std::string& tableName)
+    {
+        if (!_loadedTables.contains(tableName))
+            std::cout << "Table Not Loaded" << std::endl;
+
+        auto table = _loadedTables.at(tableName);
+
+        table.reset();
+
+        _loadedTables.erase(tableName);
     }
 }
