@@ -12,6 +12,7 @@
 #include <structures/FileStructures.h>
 #include <extensions/StringExtensions.h>
 #include <extensions/FlagExtensions.h>
+#include <extensions/MemoryExtensions.h>
 
 namespace BlizzardDatabaseLib {
 
@@ -36,8 +37,6 @@ namespace BlizzardDatabaseLib {
         WDC3Reader(Stream::StreamReader& streamReader);
         std::vector<Structures::BlizzardDatabaseRow> ReadRows(Structures::VersionDefinition& versionDefinition);
     private:
-        bool MemoryEmpty(char* data, size_t length);
-
         template<typename T>
         T GetFieldValue(int Id, Stream::BitReader& reader, std::map<long, std::string>& stringLookup, Structures::FieldMeta& fieldMeta,
             Structures::ColumnMetaData& columnMeta, std::vector<Structures::Int32>& palletData, std::map<int, Structures::Int32>& commonData)

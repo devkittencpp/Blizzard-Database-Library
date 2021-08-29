@@ -7,7 +7,7 @@ namespace BlizzardDatabaseLib {
         enum class DatabaseVersion2Flag : unsigned short
         {
             None = 0x0,
-            Sparse = 0x1,
+            VariableWidthRecord = 0x1,
             SecondaryKey = 0x2,
             Index = 0x4,
             Unknown1 = 0x8,

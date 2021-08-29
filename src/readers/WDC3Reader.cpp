@@ -68,10 +68,11 @@ namespace BlizzardDatabaseLib
         {
             auto recordBlockSize = section.NumRecords * Header.RecordSize;
             auto startOfStringTable = section.FileOffset + (recordBlockSize);
+
             _streamReader.Jump(section.FileOffset);
 
             //Read Record MemoryBlock
-            if (Extension::Flag::HasFlag(Header.Flags, Flag::DatabaseVersion2Flag::Sparse)) //If the data is Fixed record Width
+            if (Extension::Flag::HasFlag(Header.Flags, Flag::DatabaseVersion2Flag::VariableWidthRecord)) //If the data is Fixed record Width
             {         
                 recordBlockSize = section.OffsetRecordsEndOffset - section.FileOffset;
                 recordDataBlock = _streamReader.ReadBlock(recordBlockSize);
@@ -85,7 +86,7 @@ namespace BlizzardDatabaseLib
             }
 
             //Skip encryption
-            if (section.TactKeyLookup != 0 && MemoryEmpty(recordDataBlock.get(), recordBlockSize))
+            if (section.TactKeyLookup != 0 && Extension::Memory::IsEmpty(recordDataBlock.get(), recordBlockSize))
             {
                 previousRecordCount += section.NumRecords;
                 continue;
@@ -154,7 +155,7 @@ namespace BlizzardDatabaseLib
             for (int i = 0; i < section.NumRecords; i++)
             {
                 auto bitReader = Stream::BitReader(recordDataBlock, recordBlockSize);
-                if (Extension::Flag::HasFlag(Header.Flags, Flag::DatabaseVersion2Flag::Sparse))
+                if (Extension::Flag::HasFlag(Header.Flags, Flag::DatabaseVersion2Flag::VariableWidthRecord))
                 {
                     bitReader.Position = position;
                     position += sparseDataEntries[i].Size * 8;
@@ -266,7 +267,7 @@ namespace BlizzardDatabaseLib
                             continue;
                         }
 
-                        if (Extension::Flag::HasFlag(Header.Flags,Flag::DatabaseVersion2Flag::Sparse))
+                        if (Extension::Flag::HasFlag(Header.Flags,Flag::DatabaseVersion2Flag::VariableWidthRecord))
                         {
                             auto value = bitReader.ReadNullTermintingString();
                             row.Columns[column.name].Value = value;
@@ -302,12 +303,5 @@ namespace BlizzardDatabaseLib
         }
 
         return rows;
-    }
-
-    bool WDC3Reader::MemoryEmpty(char* data, size_t length)
-    {
-        if (length == 0) return 1;
-        if (*data) return 0;
-        return memcmp(data, data + 1, length - 1) == 0;
     }
 }
