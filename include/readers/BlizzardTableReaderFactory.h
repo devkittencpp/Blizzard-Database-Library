@@ -2,7 +2,7 @@
 #include <iostream>
 #include <memory>
 #include <readers/IBlizzardTableReader.h>
-#include <readers/WDC3TableReader.h>
+#include <readers/wdc3/WDC3TableReader.h>
 #include <stream/StreamReader.h>
 
 namespace BlizzardDatabaseLib {
