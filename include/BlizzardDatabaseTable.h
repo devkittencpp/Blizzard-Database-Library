@@ -18,6 +18,11 @@ namespace BlizzardDatabaseLib {
 
         }
 
+        unsigned int RecordCount()
+        {
+            return _tableReader->RecordCount();
+        }
+
         void Record(unsigned int id)
         {
             auto record = _tableReader->RecordById(id);

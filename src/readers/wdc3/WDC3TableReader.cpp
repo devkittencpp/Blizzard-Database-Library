@@ -183,5 +183,10 @@ namespace BlizzardDatabaseLib {
         {
             return std::vector<Structures::BlizzardDatabaseRow>();
         }
+
+        std::size_t WDC3TableReader::RecordCount()
+        {
+            return Header.RecordsCount;
+        }
     }
 }
