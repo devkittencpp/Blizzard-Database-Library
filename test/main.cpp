@@ -52,9 +52,17 @@ int main(int argc, char* argv[])
     auto blizzardDatabase = BlizzardDatabaseLib::BlizzardDatabase(dbcFileDirectory, dbdFileDirectory);
     auto mapTable = blizzardDatabase.LoadTable(table, build);
 
-    mapTable.Record(2245); //Deepwind Gorge
-    mapTable.Record(30); //Alterac Valley
-    mapTable.Record(37); //Azshara Crater
+    auto DG = mapTable.Record(2245); //Deepwind Gorge
+    auto AV = mapTable.Record(30); //Alterac Valley
+    auto AC = mapTable.Record(37); //Azshara Crater
+
+    auto iterator = mapTable.Records();
+
+    while (iterator.HasRecords())
+    {
+        auto record = iterator.Next();
+        std::cout << record.Columns.at("MapName_lang").Value << std::endl;
+    }
 
     auto itemTable = blizzardDatabase.LoadTable(sparseTable, build);
 

@@ -40,7 +40,7 @@ namespace BlizzardDatabaseLib {
             ~WDC3TableReader();
             void LoadTableStructure();
             Structures::BlizzardDatabaseRow RecordById(unsigned int Id) override;
-            std::vector<Structures::BlizzardDatabaseRow> Records() override;
+            Structures::BlizzardDatabaseRow Record(unsigned int index) override;
             std::size_t RecordCount() override;
         };
     }
