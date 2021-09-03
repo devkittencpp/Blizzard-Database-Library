@@ -13,6 +13,7 @@ namespace BlizzardDatabaseLib {
             _streamReader.reset();
         }
 
+
         void WDC3TableReader::LoadTableStructure()
         {
             auto length = _streamReader->Length();
@@ -39,6 +40,17 @@ namespace BlizzardDatabaseLib {
                 return;
 
             Sections = _streamReader->ReadArray<Structures::WDC3Section>(Header.sectionsCount);
+
+            auto recordBounds = 0;
+            for (auto& section : Sections)
+            {
+                recordBounds += section.NumRecords;
+                auto sectionReader = std::make_shared<WDC3SectionReader>(_streamReader, section, Header);
+
+                if(section.TactKeyLookup == 0)
+                    _sectionLookup.emplace(recordBounds, sectionReader);
+            }
+
             Meta = _streamReader->ReadArray<Structures::FieldMeta>(Header.FieldsCount);
             ColumnMeta = _streamReader->ReadArray<Structures::ColumnMetaData>(Header.FieldsCount);
 
@@ -72,247 +84,130 @@ namespace BlizzardDatabaseLib {
 
         Structures::BlizzardDatabaseRow WDC3TableReader::RecordById(unsigned int Id) 
         {
-            std::unique_ptr<char[]> recordDataBlock = nullptr;
-            std::vector<Structures::BlizzardDatabaseRow> rows;
-
-            for (auto& section : Sections)
-            {
-                auto recordBlockSize = section.NumRecords * Header.RecordSize;
-                auto startOfStringTable = section.FileOffset + (recordBlockSize);
-                auto endOfStringTable = startOfStringTable + section.StringTableSize;
-
-                _streamReader->Jump(section.FileOffset);
-
-                //Read Record MemoryBlock
-                if (Extension::Flag::HasFlag(Header.Flags, Flag::DatabaseVersion2Flag::VariableWidthRecord)) //If the data is Fixed record Width
-                {
-                    recordBlockSize = section.OffsetRecordsEndOffset - section.FileOffset;
-                    recordDataBlock = _streamReader->ReadBlock(recordBlockSize);
-
-                    if (_streamReader->Position() != section.OffsetRecordsEndOffset)
-                        std::cout << "Over/Under Read Section" << std::endl;
-                }
-                else //If record data is not fixed width
-                {
-                    recordDataBlock = _streamReader->ReadBlock(recordBlockSize);
-                    _streamReader->Jump(endOfStringTable);
-                }
-
-                //Skip encryption
-                auto emptyMemoryBlock = Extension::Memory::IsEmpty(recordDataBlock.get(), recordBlockSize);
-                if (section.TactKeyLookup != 0 && emptyMemoryBlock)
-                {
-                    continue;
-                }
-
-                auto indexData = _streamReader->ReadArray<int>(section.IndexDataSize / 4);
-                if (indexData.size() > 0) {
-                    //fill index 0-X based on records
-                }
-
-                if (section.CopyTableCount > 0)
-                {
-                    for (int i = 0; i < section.CopyTableCount; i++)
-                    {
-                        int index = _streamReader->Read<int>();
-                        int value = _streamReader->Read<int>();
-
-                        CopyData[index] = value;
-                    }
-                }
-
-                auto sparseDataEntries = std::vector<Structures::SparseEntry>();
-                if (section.OffsetMapIDCount > 0)
-                {
-                    // HACK unittestsparse is malformed and has sparseIndexData first
-                    if (Header.TableHash == 145293629)
-                    {
-                        auto streamPosition = _streamReader->Position();
-                        streamPosition += (4 * section.OffsetMapIDCount);
-                        _streamReader->Jump(streamPosition);
-                    }
-
-                    sparseDataEntries = _streamReader->ReadArray<Structures::SparseEntry>(section.OffsetMapIDCount);
-                }
-
-                auto referenceData = Structures::ReferenceData();
-                if (section.ParentLookupDataSize > 0)
-                {
-                    auto oldPosition = _streamReader->Position();
-                    referenceData.NumRecords = _streamReader->Read<unsigned int>();
-                    referenceData.MinId = _streamReader->Read<unsigned int>();
-                    referenceData.MaxId = _streamReader->Read<unsigned int>();
-
-                    auto entries = _streamReader->ReadArray<Structures::ReferenceEntry>(referenceData.NumRecords);
-                    for (int i = 0; i < entries.size(); i++)
-                    {
-                        referenceData.Entries[entries[i].Index] = entries[i].Id;
-                    }
-                }
-
-                if (section.OffsetMapIDCount > 0)
-                {
-                    auto sparseIndexData = _streamReader->ReadArray<int>(section.OffsetMapIDCount);
-
-                    if (section.IndexDataSize > 0 && indexData.size() != sparseIndexData.size())
-                        std::cout << "m_indexData.Length != sparseIndexData.Length" << std::endl;
-
-                    indexData = sparseIndexData;
-                }
+            std::shared_ptr<char[]> sectionDataBlock;
+            std::unique_ptr<char[]> recordDataBlock;
+            std::shared_ptr<WDC3SectionReader> sectionReader;
+            for (auto& section : _sectionLookup)
+            {        
+                sectionReader = section.second;
+                sectionDataBlock = sectionReader->OpenSection();
 
                 auto indexOfId = 0U;
-                if (!Extension::Vector::IndexOf<int>(indexData, Id, indexOfId))
-                    continue;
+                if (!Extension::Vector::IndexOf<int>(sectionReader->IndexData, Id, indexOfId))
+                     continue;
 
-                auto recordSize = Header.RecordSize;
-                auto bitReader = Stream::BitReader(recordDataBlock, recordBlockSize);
-                auto recordReader = WDC3RecordReader(_streamReader,_versionDefinition,bitReader,Header);
                 if (Extension::Flag::HasFlag(Header.Flags, Flag::DatabaseVersion2Flag::VariableWidthRecord))
                 {
-                    bitReader.Offset = sparseDataEntries[indexOfId].Offset - section.FileOffset;
-                    return recordReader.ReadRecord(indexOfId, section, bitReader, Meta, ColumnMeta, PalletData, CommonData, referenceData, indexData);
+                    auto recordBaseOffset = sectionReader->SparseEntryData[indexOfId].Offset - sectionReader->Section.FileOffset;
+                    //auto recordBaseOffset = currentSectionIndex * Header.RecordSize;
+                    auto recordLength = sectionReader->SparseEntryData[indexOfId].Size;
+                    auto recordStartPtr = sectionDataBlock.get() + recordBaseOffset;
+                    recordDataBlock = std::make_unique<char[]>(recordLength);
+                
+                    //Should be changed to read directly from the section Ptr
+                    memcpy(recordDataBlock.get(), recordStartPtr, recordLength);
                 }
                 else
                 {
-                    bitReader.Offset = indexOfId * recordSize;
-                    return recordReader.ReadRecord(indexOfId, section, bitReader, Meta, ColumnMeta, PalletData, CommonData, referenceData, indexData);
+                    auto recordBaseOffset = indexOfId * Header.RecordSize;
+                    auto recordLength = Header.RecordSize;
+                    auto recordStartPtr = sectionDataBlock.get() + recordBaseOffset;
+                    recordDataBlock = std::make_unique<char[]>(Header.RecordSize);
+                
+                    //Should be changed to read directly from the section Ptr
+                    memcpy(recordDataBlock.get(), recordStartPtr, Header.RecordSize);
                 }
+                
+                auto recordSize = Header.RecordSize;
+                auto bitReader = Stream::BitReader(recordDataBlock, Header.RecordSize);
+                auto recordReader = WDC3RecordReader(_streamReader, _versionDefinition, bitReader, Header);
+                
+                auto record = recordReader.ReadRecord(indexOfId, sectionReader->Section, bitReader, Meta, ColumnMeta, PalletData, CommonData, sectionReader->ReferenceData, sectionReader->IndexData);
+
+                return record;
             }
-            return Structures::BlizzardDatabaseRow();
         }
 
         Structures::BlizzardDatabaseRow WDC3TableReader::Record(unsigned int index)
         {
-            std::unique_ptr<char[]> recordDataBlock = nullptr;
-            std::vector<int> _recordCountsPerSection;
-
-            auto recordCounter = 0;
-            for (auto& section : Sections)
+            std::shared_ptr<char[]> sectionDataBlock;
+            std::unique_ptr<char[]> recordDataBlock;
+            std::shared_ptr<WDC3SectionReader> sectionReader;
+            auto sectionMaxIndex = 0;
+            auto currentSectionIndex = 0;
+            for (auto& section : _sectionLookup)
             {
-                recordCounter += section.NumRecords;
-                _recordCountsPerSection.push_back(recordCounter);
+                //In this section
+                if (index < section.first)
+                {
+                    sectionReader = section.second;
+
+                    if (!section.second->IsOpen)
+                        sectionDataBlock = section.second->OpenSection();       
+                    sectionDataBlock = section.second->GetSection();
+              
+                    currentSectionIndex = index - _sectionMaxIndexCounter;
+                    sectionMaxIndex = section.first;
+
+                    break;
+                }
             }
             
-            auto sectionIndex = 0;
-            while (index >= _recordCountsPerSection[sectionIndex])
-            {
-                auto section = _recordCountsPerSection[sectionIndex];
-                index -= section;
-                sectionIndex++;        
-            }
-                
-            if (sectionIndex >= Header.sectionsCount)
-                std::cout << "Invalid Secion Index" << std::endl;
-
-            auto section = Sections[sectionIndex];
-            auto recordBlockSize = section.NumRecords * Header.RecordSize;
-            auto startOfStringTable = section.FileOffset + (recordBlockSize);
-            auto endOfStringTable = startOfStringTable + section.StringTableSize;
-
-            _streamReader->Jump(section.FileOffset);
-        
-            //Read Record MemoryBlock
-            if (Extension::Flag::HasFlag(Header.Flags, Flag::DatabaseVersion2Flag::VariableWidthRecord)) //If the data is Fixed record Width
-            {
-                recordBlockSize = section.OffsetRecordsEndOffset - section.FileOffset;
-                recordDataBlock = _streamReader->ReadBlock(recordBlockSize);
-
-                if (_streamReader->Position() != section.OffsetRecordsEndOffset)
-                    std::cout << "Over/Under Read Section" << std::endl;
-            }
-            else //If record data is not fixed width
-            {
-                recordDataBlock = _streamReader->ReadBlock(recordBlockSize);
-                _streamReader->Jump(endOfStringTable);
-            }
-
-            //Skip encryption
-            auto emptyMemoryBlock = Extension::Memory::IsEmpty(recordDataBlock.get(), recordBlockSize);
-            if (section.TactKeyLookup != 0 && emptyMemoryBlock)
-            {
-                return Structures::BlizzardDatabaseRow();
-            }
-
-            auto indexData = _streamReader->ReadArray<int>(section.IndexDataSize / 4);
-            if (indexData.size() > 0) {
-                //fill index 0-X based on records
-            }
-
-            if (section.CopyTableCount > 0)
-            {
-                for (int i = 0; i < section.CopyTableCount; i++)
-                {
-                    int index = _streamReader->Read<int>();
-                    int value = _streamReader->Read<int>();
-
-                    CopyData[index] = value;
-                }
-            }
-
-            auto sparseDataEntries = std::vector<Structures::SparseEntry>();
-            if (section.OffsetMapIDCount > 0)
-            {
-                // HACK unittestsparse is malformed and has sparseIndexData first
-                if (Header.TableHash == 145293629)
-                {
-                    auto streamPosition = _streamReader->Position();
-                    streamPosition += (4 * section.OffsetMapIDCount);
-                    _streamReader->Jump(streamPosition);
-                }
-
-                sparseDataEntries = _streamReader->ReadArray<Structures::SparseEntry>(section.OffsetMapIDCount);
-            }
-
-            auto referenceData = Structures::ReferenceData();
-            if (section.ParentLookupDataSize > 0)
-            {
-                auto oldPosition = _streamReader->Position();
-                referenceData.NumRecords = _streamReader->Read<unsigned int>();
-                referenceData.MinId = _streamReader->Read<unsigned int>();
-                referenceData.MaxId = _streamReader->Read<unsigned int>();
-
-                auto entries = _streamReader->ReadArray<Structures::ReferenceEntry>(referenceData.NumRecords);
-                for (int i = 0; i < entries.size(); i++)
-                {
-                    referenceData.Entries[entries[i].Index] = entries[i].Id;
-                }
-            }
-
-            if (section.OffsetMapIDCount > 0)
-            {
-                auto sparseIndexData = _streamReader->ReadArray<int>(section.OffsetMapIDCount);
-
-                if (section.IndexDataSize > 0 && indexData.size() != sparseIndexData.size())
-                    std::cout << "m_indexData.Length != sparseIndexData.Length" << std::endl;
-
-                indexData = sparseIndexData;
-            }
- 
-            auto recordSize = Header.RecordSize;
-            auto bitReader = Stream::BitReader(recordDataBlock, recordBlockSize);
-            auto recordReader = WDC3RecordReader(_streamReader, _versionDefinition, bitReader, Header);
             if (Extension::Flag::HasFlag(Header.Flags, Flag::DatabaseVersion2Flag::VariableWidthRecord))
             {
-                bitReader.Offset = sparseDataEntries[index].Offset - section.FileOffset;
-                return recordReader.ReadRecord(index, section, bitReader, Meta, ColumnMeta, PalletData, CommonData, referenceData, indexData);
+               auto recordBaseOffset = sectionReader->SparseEntryData[currentSectionIndex].Offset - sectionReader->Section.FileOffset;
+               //auto recordBaseOffset = currentSectionIndex * Header.RecordSize;
+               auto recordLength = sectionReader->SparseEntryData[currentSectionIndex].Size;
+               auto recordStartPtr = sectionDataBlock.get() + recordBaseOffset;
+               recordDataBlock = std::make_unique<char[]>(recordLength);
+
+               //Should be changed to read directly from the section Ptr
+               memcpy(recordDataBlock.get(), recordStartPtr, recordLength);
             }
             else
             {
-                bitReader.Offset = index * recordSize;
-                return recordReader.ReadRecord(index, section, bitReader, Meta, ColumnMeta, PalletData, CommonData, referenceData, indexData);
+                auto recordBaseOffset = currentSectionIndex * Header.RecordSize;
+                auto recordLength = Header.RecordSize;
+                auto recordStartPtr = sectionDataBlock.get() + recordBaseOffset;
+                recordDataBlock = std::make_unique<char[]>(Header.RecordSize);
+
+                //Should be changed to read directly from the section Ptr
+                memcpy(recordDataBlock.get(), recordStartPtr, Header.RecordSize);   
+            }
+
+            auto recordSize = Header.RecordSize;
+            auto bitReader = Stream::BitReader(recordDataBlock, Header.RecordSize);
+            auto recordReader = WDC3RecordReader(_streamReader, _versionDefinition, bitReader, Header);
+
+            auto record =  recordReader.ReadRecord(currentSectionIndex, sectionReader->Section, bitReader, Meta, ColumnMeta, PalletData, CommonData, sectionReader->ReferenceData, sectionReader->IndexData);
+          
+            if (sectionReader->IsOpen && index + 1 >= sectionMaxIndex)
+            {
+                sectionReader->CloseSection();
+                _sectionMaxIndexCounter += currentSectionIndex + 1;
+            }
+
+            return record;
+        }
+
+        void WDC3TableReader::CloseAllSections()
+        {
+            for (auto& section : _sectionLookup)
+            {
+                if (section.second->IsOpen)
+                    section.second->CloseSection();
             }
         }
 
         std::size_t WDC3TableReader::RecordCount()
-        {
-            auto count = 0;
-            for (auto& section : Sections)
+        {   
+            auto recordCount = 0;
+            for (auto& section : _sectionLookup)
             {
-                if (section.TactKeyLookup == 0)
-                    count += section.NumRecords;
+                recordCount = section.first;           
             }
 
-            return count;
+            return recordCount;
         }
     }
 }

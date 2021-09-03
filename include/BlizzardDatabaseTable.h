@@ -60,6 +60,11 @@ namespace BlizzardDatabaseLib {
 
         }
 
+        ~BlizzardDatabaseTable()
+        {
+            _tableReader->CloseAllSections();
+        }
+
         unsigned int RecordCount()
         {
             return _tableReader->RecordCount();

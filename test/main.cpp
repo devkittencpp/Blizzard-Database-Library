@@ -57,11 +57,12 @@ int main(int argc, char* argv[])
     auto AC = mapTable.Record(37); //Azshara Crater
 
     auto iterator = mapTable.Records();
-
     while (iterator.HasRecords())
     {
         auto record = iterator.Next();
-        std::cout << record.Columns.at("MapName_lang").Value << std::endl;
+
+        if(!record.Columns.empty())
+            std::cout << record.Columns.at("MapName_lang").Value << std::endl;
     }
 
     auto itemTable = blizzardDatabase.LoadTable(sparseTable, build);

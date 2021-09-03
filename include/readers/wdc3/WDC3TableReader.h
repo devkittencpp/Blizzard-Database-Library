@@ -9,6 +9,7 @@
 #include <flags/TableFormatSignatures.h>
 #include <readers/IBlizzardTableReader.h>
 #include <readers/wdc3/WDC3RecordReader.h>
+#include <readers/wdc3/WDC3SectionReader.h>
 #include <stream/StreamReader.h>
 #include <stream/BitReader.h>
 #include <structures/Types.h>
@@ -17,6 +18,7 @@
 #include <extensions/FlagExtensions.h>
 #include <extensions/MemoryExtensions.h>
 #include <extensions/VectorExtensions.h>
+
 
 namespace BlizzardDatabaseLib {
     namespace Reader {
@@ -31,14 +33,15 @@ namespace BlizzardDatabaseLib {
             std::vector<Structures::ColumnMetaData> ColumnMeta;
             std::map<int, std::vector<Structures::Int32>> PalletData;
             std::map<int, std::map<int, Structures::Int32>> CommonData;
-            std::map<int, int> CopyData;
-            std::map<long, std::string> StringTable;
-
+            std::map<int, std::shared_ptr<WDC3SectionReader>> _sectionLookup;
             Structures::VersionDefinition _versionDefinition;
+
+            unsigned int _sectionMaxIndexCounter = 0;
         public:
             WDC3TableReader(std::shared_ptr<Stream::StreamReader> streamReader, Structures::VersionDefinition versionDefinition);
             ~WDC3TableReader();
             void LoadTableStructure();
+            void CloseAllSections();
             Structures::BlizzardDatabaseRow RecordById(unsigned int Id) override;
             Structures::BlizzardDatabaseRow Record(unsigned int index) override;
             std::size_t RecordCount() override;
