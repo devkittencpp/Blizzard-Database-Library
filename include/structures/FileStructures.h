@@ -20,13 +20,7 @@ namespace BlizzardDatabaseLib {
             std::map<std::string, BlizzardDatabaseColumn> Columns;
 
             BlizzardDatabaseRow() = default;
-            BlizzardDatabaseRow(int recordId) : RecordId(recordId) 
-            {
-                auto column = BlizzardDatabaseColumn();
-                column.Value = std::to_string(RecordId);
-
-                Columns["ID"] = column;         
-            }    
+            BlizzardDatabaseRow(int recordId) : RecordId(recordId) {}
         };
 
         struct ColumnDefinition
