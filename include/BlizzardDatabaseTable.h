@@ -79,6 +79,16 @@ namespace BlizzardDatabaseLib {
         {
             return BlizzardDatabaseRecordCollection(_tableReader);
         }
+
+        Structures::BlizzardDatabaseRow GetRecordDefinition()
+        {
+            return _tableReader->RecordDefinition();
+        }
+
+        void WriterRecord(Structures::BlizzardDatabaseRow& newRecord)
+        {
+
+        }
     private:
         void LoadTableStructure()
         {  

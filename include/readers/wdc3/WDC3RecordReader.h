@@ -17,12 +17,10 @@ namespace BlizzardDatabaseLib {
             std::shared_ptr<Stream::StreamReader> _streamReader;
         public:
             WDC3RecordReader(std::shared_ptr<Stream::StreamReader> streamReader, Structures::VersionDefinition& versionDefinition, Stream::BitReader& bitReader, Structures::WDC3Header& fileHeader);
-
+           
             Structures::BlizzardDatabaseRow ReadRecord(int indexOfId, Structures::WDC3Section& section, Stream::BitReader& reader,
                 std::vector<Structures::FieldMeta>& fieldMetaData, std::vector<Structures::ColumnMetaData>& columnMetaData,std::map<int, std::vector<Structures::Int32>>& palletMetaData,
                 std::map<int, std::map<int, Structures::Int32>>& commonMetaData,Structures::ReferenceData& referenceData, std::vector<int>& indexData);
-
-            void ReadVariableWidthRecord();
         private:
             template<typename T>
             T GetFieldValue(int Id, Stream::BitReader& reader, Structures::FieldMeta& fieldMeta,

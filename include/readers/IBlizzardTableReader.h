@@ -10,6 +10,7 @@ namespace BlizzardDatabaseLib {
             virtual void CloseAllSections() = 0;
             virtual Structures::BlizzardDatabaseRow RecordById(unsigned int Id) = 0;
             virtual Structures::BlizzardDatabaseRow Record(unsigned int index) = 0;
+            virtual Structures::BlizzardDatabaseRow RecordDefinition() = 0;
             virtual std::size_t RecordCount() = 0;
         };
     }

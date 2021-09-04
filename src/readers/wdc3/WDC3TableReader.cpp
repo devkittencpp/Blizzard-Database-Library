@@ -209,5 +209,19 @@ namespace BlizzardDatabaseLib {
 
             return recordCount;
         }
+
+        Structures::BlizzardDatabaseRow WDC3TableReader::RecordDefinition()
+        {
+            auto recordDefinition = Structures::BlizzardDatabaseRow();
+            for (auto& columnInformation : _versionDefinition.versionDefinitions.definitions)
+            {
+                if (columnInformation.isID)
+                    continue;
+
+                recordDefinition.Columns.emplace(columnInformation.name, std::string(""));
+            }
+
+            return recordDefinition;
+        }
     }
 }
