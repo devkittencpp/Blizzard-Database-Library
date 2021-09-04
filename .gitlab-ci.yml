@@ -25,4 +25,7 @@ build:
       # cache:
       #   paths:
       #     - "*.o"
+  only:
+      - web
+  allow_failure: false
 
