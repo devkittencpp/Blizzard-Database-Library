@@ -19,7 +19,12 @@ namespace BlizzardDatabaseLib {
             auto Id = section.IndexDataSize != 0 ? indexData[indexOfId] : -1;
             auto columns = _versionDefinition.columnDefinitions;
             auto versionDefs = _versionDefinition.versionDefinitions;
-            auto row = Structures::BlizzardDatabaseRow();
+
+            Structures::BlizzardDatabaseRow row = Structures::BlizzardDatabaseRow();
+            if (Id != -1)
+            {
+                row = Structures::BlizzardDatabaseRow(Id);
+            }
 
             for (int def = 0; def < columnMetaData.size(); def++)
             {

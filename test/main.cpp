@@ -62,12 +62,20 @@ int main(int argc, char* argv[])
         auto record = iterator.Next();
 
         if(!record.Columns.empty())
-            std::cout << record.Columns.at("MapName_lang").Value << std::endl;
+            std::cout << record.RecordId << "=>" << record.Columns.at("MapName_lang").Value << std::endl;
     }
 
+    auto recordDefinition = mapTable.GetRecordDefinition();
+    recordDefinition = AV;
+
+    auto newColumn = BlizzardDatabaseLib::Structures::BlizzardDatabaseColumn();
+    newColumn.Value = std::string("Custom AV");
+    recordDefinition.Columns.erase("ID");
+    recordDefinition.Columns["MapName_lang"] = newColumn;
+   
     auto itemTable = blizzardDatabase.LoadTable(sparseTable, build);
 
-    itemTable.Record(187111); //Memory of Blind Faith
+    auto item = itemTable.Record(187111); //Memory of Blind Faith
 
     blizzardDatabase.UnloadTable(table);
     blizzardDatabase.UnloadTable(sparseTable);
