@@ -3,6 +3,8 @@
 #include <string>
 #include <BlizzardDatabaseTable.h>
 #include <filesystem>
+#include <chrono>
+#include <thread>
 
 int main(int argc, char* argv[])
 {
@@ -65,21 +67,22 @@ int main(int argc, char* argv[])
             std::cout << record.RecordId << "=>" << record.Columns.at("MapName_lang").Value << std::endl;
     }
 
-    auto recordDefinition = mapTable.GetRecordDefinition();
-    recordDefinition = AV;
+    auto newRecordDefinition = mapTable.GetRecordDefinition();
+    newRecordDefinition = AV;
 
     auto newColumn = BlizzardDatabaseLib::Structures::BlizzardDatabaseColumn();
     newColumn.Value = std::string("Custom AV");
-    recordDefinition.Columns.erase("ID");
-    recordDefinition.Columns["MapName_lang"] = newColumn;
+    newRecordDefinition.Columns["MapName_lang"] = newColumn;
    
-    auto itemTable = blizzardDatabase.LoadTable(sparseTable, build);
+    mapTable.WriterRecord(newRecordDefinition);
 
-    auto item = itemTable.Record(187111); //Memory of Blind Faith
+    AC = mapTable.Record(37); //Azshara Crater
 
     blizzardDatabase.UnloadTable(table);
-    blizzardDatabase.UnloadTable(sparseTable);
 
+    auto itemTable = blizzardDatabase.LoadTable(sparseTable, build);
+    auto item = itemTable.Record(187111); //Memory of Blind Faith
+    blizzardDatabase.UnloadTable(sparseTable);
 
     //auto achievementTable = blizzardDatabase.LoadTable("achievement");
     //auto areapoiTable = blizzardDatabase.LoadTable("areapoi");

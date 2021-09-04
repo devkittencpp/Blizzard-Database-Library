@@ -48,6 +48,10 @@ namespace BlizzardDatabaseLib {
         void WriterRecord(Structures::BlizzardDatabaseRow& newRecord)
         {
 
+
+            //Reload data so it contains new record
+            _tableReader->CloseAllSections();
+            _tableReader->LoadTableStructure();
         }
     private:
         void LoadTableStructure()

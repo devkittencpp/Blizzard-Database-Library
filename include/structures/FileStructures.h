@@ -16,7 +16,7 @@ namespace BlizzardDatabaseLib {
 
         struct BlizzardDatabaseRow
         {
-            int RecordId;
+            int RecordId = -1;
             std::map<std::string, BlizzardDatabaseColumn> Columns;
 
             BlizzardDatabaseRow() = default;

@@ -13,6 +13,11 @@ namespace BlizzardDatabaseLib {
             virtual Structures::BlizzardDatabaseRow RecordDefinition() = 0;
             virtual std::size_t RecordCount() = 0;
         };
+
+        struct IBlizzardTableWriter
+        {
+            virtual void WriteRecord(Structures::BlizzardDatabaseRow& record) = 0;
+        };
     }
 }
 
