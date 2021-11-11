@@ -1,38 +1,36 @@
 ﻿# CMakeList.txt : CMake project for DBCD, include source and define
 # project specific logic here.
 #
-cmake_minimum_required(VERSION 3.3)
-set (CMAKE_CXX_STANDARD 20)
-set (CMAKE_CXX_STANDARD_REQUIRED ON)
-set (CMAKE_C_STANDARD  11)
-set (CMAKE_C_STANDARD_REQUIRED  ON)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.3)
+SET(CMAKE_CXX_STANDARD 20)
+SET(CMAKE_CXX_STANDARD_REQUIRED ON)
+SET(CMAKE_C_STANDARD  11)
+SET(CMAKE_C_STANDARD_REQUIRED  ON)
 
-include(./cmake/CMakeLib.txt)
+INCLUDE(./cmake/cmake-function.cmake)
 
-project("DBCD")
+PROJECT("BlizzardDatabaseLib")
 
 # Add the found include directories to our include list.
-INCLUDE_DIRECTORIES("${CMAKE_SOURCE_DIR}/include" )
+INCLUDE_DIRECTORIES("${CMAKE_CURRENT_SOURCE_DIR}/include" )
 
 #library files
-collect_files(BlizzardDatabaseLib_source ./src true "*.cpp" "")
-collect_files(BlizzardDatabaseLib_headers ./include true "*.h;*.hpp;*.inl" "")
+collect_files(BlizzardDatabaseLib_source "${CMAKE_CURRENT_SOURCE_DIR}/src" true "*.cpp" "")
+collect_files(BlizzardDatabaseLib_headers "${CMAKE_CURRENT_SOURCE_DIR}/include" true "*.h;*.hpp;*.inl" "")
 
 #testConsole files
-collect_files(TestConsole_source ./test false "*.cpp" "")
-collect_files(TestConsole_headers ./test false "*.h;*.hpp;*.inl" "")
+collect_files(TestConsole_source "${CMAKE_CURRENT_SOURCE_DIR}/test" false "*.cpp" "")
+collect_files(TestConsole_headers "${CMAKE_CURRENT_SOURCE_DIR}/test" false "*.h;*.hpp;*.inl" "")
 
-add_library(
-    BlizzardDatabaseLib  
+ADD_LIBRARY(BlizzardDatabaseLib  
     ${BlizzardDatabaseLib_source} 
     ${BlizzardDatabaseLib_headers} 
 )
 
-add_executable(
-    TestConsole 
+ADD_EXECUTABLE(TestConsole 
     ${TestConsole_source} 
     ${TestConsole_headers}
-    )
+)
 
-target_link_libraries(BlizzardDatabaseLib)
-target_link_libraries(TestConsole BlizzardDatabaseLib)
+TARGET_LINK_LIBRARIES(BlizzardDatabaseLib)
+TARGET_LINK_LIBRARIES(TestConsole BlizzardDatabaseLib)
