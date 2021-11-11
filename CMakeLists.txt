@@ -15,12 +15,12 @@ project("DBCD")
 INCLUDE_DIRECTORIES("${CMAKE_SOURCE_DIR}/include" )
 
 #library files
-collect_files(BlizzardDatabaseLib_source src true "*.cpp" "")
-collect_files(BlizzardDatabaseLib_headers include true "*.h;*.hpp;*.inl" "")
+collect_files(BlizzardDatabaseLib_source ./src true "*.cpp" "")
+collect_files(BlizzardDatabaseLib_headers ./include true "*.h;*.hpp;*.inl" "")
 
 #testConsole files
-collect_files(TestConsole_source test false "*.cpp" "")
-collect_files(TestConsole_headers test false "*.h;*.hpp;*.inl" "")
+collect_files(TestConsole_source ./test false "*.cpp" "")
+collect_files(TestConsole_headers ./test false "*.h;*.hpp;*.inl" "")
 
 add_library(
     BlizzardDatabaseLib  
