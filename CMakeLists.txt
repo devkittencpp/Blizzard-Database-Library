@@ -26,11 +26,15 @@ ADD_LIBRARY(BlizzardDatabaseLib
     ${BlizzardDatabaseLib_source} 
     ${BlizzardDatabaseLib_headers} 
 )
-
-ADD_EXECUTABLE(TestConsole 
-    ${TestConsole_source} 
-    ${TestConsole_headers}
-)
-
 TARGET_LINK_LIBRARIES(BlizzardDatabaseLib)
-TARGET_LINK_LIBRARIES(TestConsole BlizzardDatabaseLib)
+
+OPTION(BLIZZARD_DATABASE_TEST_CONSOLE "Build Test Console" OFF)
+IF(NOT BLIZZARD_DATABASE_TEST_CONSOLE)
+  MESSAGE(STATUS "Skipping test console build")
+ELSE()
+    ADD_EXECUTABLE(TestConsole 
+        ${TestConsole_source} 
+        ${TestConsole_headers}
+    )  
+    TARGET_LINK_LIBRARIES(TestConsole BlizzardDatabaseLib)
+ENDIF(NOT BLIZZARD_DATABASE_TEST_CONSOLE)
