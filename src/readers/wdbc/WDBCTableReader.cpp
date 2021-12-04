@@ -49,6 +49,21 @@ namespace BlizzardDatabaseLib {
 
         Structures::BlizzardDatabaseRow WDBCTableReader::RecordById(unsigned int Id)
         {
+            auto offset = 0;
+            for(int i = 0; i < Header.RecordsCount; i++)
+            {
+                auto recordDataBlock = std::make_unique<char[]>(32);
+                memcpy(recordDataBlock.get(), _recordData.get() + offset, 32);
+                auto bitReader = Stream::BitReader(recordDataBlock, Header.RecordSize);
+                auto rowId = bitReader.ReadUint32(32);
+                if(rowId == Id)
+                {
+                    return Record(i);
+                }
+
+                offset += Header.RecordSize;
+            }
+
             return Structures::BlizzardDatabaseRow();
         }
 

@@ -60,10 +60,12 @@ int main(int argc, char* argv[])
     const auto& build = BlizzardDatabaseLib::Structures::Build("9.1.0.39584");
     const auto& build_wrath = BlizzardDatabaseLib::Structures::Build("3.3.5.12340");
     const auto& table = std::string("map");
+    const auto& areaTableName = std::string("areaTable");
     const auto& sparseTable = std::string("ItemSparse");
 
     auto blizzardDatabase = BlizzardDatabaseLib::BlizzardDatabase(dbcWrathFileDirectory, dbdFileDirectory);
     auto mapTable = blizzardDatabase.LoadTable(table, build_wrath);
+    auto areaTable = blizzardDatabase.LoadTable(areaTableName, build_wrath);
 
     auto iterator = mapTable.Records();
     while (iterator.HasRecords())
@@ -74,6 +76,9 @@ int main(int argc, char* argv[])
             std::cout << record.RecordId << "=>" << record.Columns.at("MapName_lang").Value << std::endl;
     }
 
+    auto firstEntry = mapTable.Record(0); //Azeroth
+    auto moltenCore = mapTable.Record(409); //MoltenCore
+    auto LastEntry = mapTable.Record(724); //Azeroth
 
    //auto blizzardDatabase = BlizzardDatabaseLib::BlizzardDatabase(dbcFileDirectory, dbdFileDirectory);
    //auto mapTable = blizzardDatabase.LoadTable(table, build);
