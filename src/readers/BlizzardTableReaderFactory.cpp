@@ -8,6 +8,8 @@ namespace BlizzardDatabaseLib {
 
 			if (Extension::String::Compare(formatSignature, std::string("WDC3")))
 				return std::make_shared<WDC3TableReader>(streamReader, versionDefinition);
+			if (Extension::String::Compare(formatSignature, std::string("WDBC")))
+				return std::make_shared<WDBCTableReader>(streamReader, versionDefinition);
 		}
 	}
 }

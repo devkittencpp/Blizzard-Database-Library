@@ -11,6 +11,7 @@ namespace BlizzardDatabaseLib {
         struct BlizzardDatabaseColumn
         {
             std::string Value;
+            std::vector<std::string> Values;
             int ReferenceId;
         };
 

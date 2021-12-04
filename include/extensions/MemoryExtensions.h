@@ -14,18 +14,11 @@ namespace BlizzardDatabaseLib {
             }
 
             static void Dump(const char* mem, size_t length) {
-                char const hex_chars[16] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
-                std::stringstream ss;
-                for (int i = 0; i < length; ++i)
-                {
-                    char const byte = mem[i];
-
-                    ss << hex_chars[(byte & 0xF0) >> 4];
-                    ss << hex_chars[(byte & 0x0F) >> 0];
-
-                    std::cout << ss.str();
+                std::cout << std::setfill('0');
+                for (size_t i = 0; i < length; ++i) {
+                    std::cout << std::hex << std::setw(2) << (int)mem[i];
+                	std::cout << (((i + 1) % 8 == 0) ? "\n" : " ");
                 }
-
                 std::cout << std::endl;
             }
         };

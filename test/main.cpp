@@ -69,7 +69,7 @@ int main(int argc, char* argv[])
     while (iterator.HasRecords())
     {
         auto record = iterator.Next();
-    
+
         if(!record.Columns.empty())
             std::cout << record.RecordId << "=>" << record.Columns.at("MapName_lang").Value << std::endl;
     }

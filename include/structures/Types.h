@@ -39,6 +39,14 @@ namespace BlizzardDatabaseLib {
             int sectionsCount;
         };
 
+        struct WDBCHeader
+        {
+            int RecordsCount;
+            int FieldsCount;
+            int RecordSize;
+            int StringTableSize;
+        };
+
         struct SparseEntry
         {
             unsigned int Offset;

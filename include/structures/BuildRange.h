@@ -16,6 +16,8 @@ namespace BlizzardDatabaseLib {
             {
                 if (_minBuild < build && _maxBuild > build)
                     return true;
+                if (_minBuild == build || _maxBuild == build)
+                    return true;
                 return false;
             }
         };
