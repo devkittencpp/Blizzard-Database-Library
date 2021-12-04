@@ -37,7 +37,7 @@ namespace BlizzardDatabaseLib
 
         _loadedTables.emplace(tableName, constructedTable);
 
-        return *constructedTable;
+        return *_loadedTables[tableName];
     }
 
     void BlizzardDatabase::UnloadTable(const std::string& tableName)
