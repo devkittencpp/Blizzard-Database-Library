@@ -14,7 +14,18 @@ namespace BlizzardDatabaseLib
         if (_loadedTables.contains(tableName))
             std::cout << "Table Already Loaded" << std::endl;
 
-        auto absoluteFilePathOfDatabaseTable = _databaseFilesLocation + "\\" + tableName + ".db2";
+        auto databaseFile = std::filesystem::directory_entry();
+        for (const auto& entry : std::filesystem::directory_iterator(_databaseFilesLocation))
+        {
+            auto filename = entry.path().stem().string();
+	        if(Extension::String::IgnoreCaseCompare(filename, tableName))
+	        {
+                std::cout << "Database <"<< tableName << "> Table Found!" << std::endl;
+                databaseFile = entry;
+	        }
+        }
+        
+        auto absoluteFilePathOfDatabaseTable = _databaseFilesLocation + "\\" + databaseFile.path().filename().string();
         auto absoluteFilePathOfDatabaseTableDefinition = _databaseDefinitionFilesLocation + "\\" + tableName + ".dbd";
 
         auto databaseDefinition = DatabaseDefinition(absoluteFilePathOfDatabaseTableDefinition);

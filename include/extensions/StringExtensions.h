@@ -3,6 +3,7 @@
 #include <vector>
 #include <string>
 #include <sstream>
+#include <locale>
 
 namespace BlizzardDatabaseLib {
     namespace Extension {
@@ -33,6 +34,24 @@ namespace BlizzardDatabaseLib {
             static bool Compare(const std::string& lhs, const std::string& rhs)
             {
                 auto result = strcmp(lhs.c_str(), rhs.c_str());
+
+                if (result == 0)
+                    return true;
+                return false;
+            }
+
+            static bool IgnoreCaseCompare(const std::string& lhs, const std::string& rhs)
+            {
+                std::locale loc;
+                auto lhs_lower = lhs;
+                for (std::string::size_type i = 0; i < lhs.length(); ++i)
+                    lhs_lower[i] = std::tolower(lhs[i], loc);
+
+                auto rhs_lower = rhs;
+                for (std::string::size_type i = 0; i < rhs.length(); ++i)
+                    rhs_lower[i] = std::tolower(rhs[i], loc);
+
+                auto result = strcmp(lhs_lower.c_str(), rhs_lower.c_str());
 
                 if (result == 0)
                     return true;
