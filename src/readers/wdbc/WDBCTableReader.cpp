@@ -166,7 +166,7 @@ namespace BlizzardDatabaseLib {
                 if (columnInformation.isID)
                     continue;
 
-                recordDefinition.Columns.emplace(columnInformation.name, std::string(""));
+                recordDefinition.Columns[columnInformation.name] = {Structures::BlizzardDatabaseColumn{std::string("")}};
             }
 
             return recordDefinition;
