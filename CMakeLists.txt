@@ -12,7 +12,7 @@ SET(CMAKE_CXX_STANDARD_REQUIRED ON)
 SET(CMAKE_C_STANDARD  11)
 SET(CMAKE_C_STANDARD_REQUIRED  ON)
 
-INCLUDE(cmake/cmake-function.cmake)
+INCLUDE(cmake/cmake_function.cmake)
 
 PROJECT("BlizzardDatabaseLib")
 
