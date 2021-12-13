@@ -9,8 +9,10 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 3.3)
 SET(CMAKE_CXX_STANDARD 20)
 SET(CMAKE_CXX_STANDARD_REQUIRED ON)
+SET(CMAKE_C_STANDARD  11)
+SET(CMAKE_C_STANDARD_REQUIRED  ON)
 
-INCLUDE(cmake/cmake_function.cmake)
+INCLUDE(cmake/cmake-function.cmake)
 
 PROJECT("BlizzardDatabaseLib")
 
@@ -25,12 +27,6 @@ collect_files(BlizzardDatabaseLib_headers "${CMAKE_CURRENT_SOURCE_DIR}/include" 
 collect_files(TestConsole_source "${CMAKE_CURRENT_SOURCE_DIR}/test" false "*.cpp" "")
 collect_files(TestConsole_headers "${CMAKE_CURRENT_SOURCE_DIR}/test" false "*.h;*.hpp;*.inl" "")
 
-ADD_LIBRARY(BlizzardDatabaseLib  
-    ${BlizzardDatabaseLib_source} 
-    ${BlizzardDatabaseLib_headers} 
-)
-TARGET_LINK_LIBRARIES(BlizzardDatabaseLib)
-
 OPTION(BLIZZARD_DATABASE_TEST_CONSOLE "Build Test Console" OFF)
 IF(NOT BLIZZARD_DATABASE_TEST_CONSOLE)
   MESSAGE(STATUS "Skipping test console build")
@@ -38,6 +34,8 @@ ELSE()
     ADD_EXECUTABLE(TestConsole 
         ${TestConsole_source} 
         ${TestConsole_headers}
+		${BlizzardDatabaseLib_source} 
+        ${BlizzardDatabaseLib_headers} 
     )  
     TARGET_LINK_LIBRARIES(TestConsole BlizzardDatabaseLib)
 ENDIF(NOT BLIZZARD_DATABASE_TEST_CONSOLE)
