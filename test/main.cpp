@@ -63,9 +63,9 @@ int main(int argc, char* argv[])
     const auto& areaTableName = std::string("areaTable");
     const auto& sparseTable = std::string("ItemSparse");
 
-    auto blizzardDatabase = BlizzardDatabaseLib::BlizzardDatabase(dbcWrathFileDirectory, dbdFileDirectory);
-    auto mapTable = blizzardDatabase.LoadTable(table, build_wrath);
-    auto areaTable = blizzardDatabase.LoadTable(areaTableName, build_wrath);
+    auto blizzardDatabase = BlizzardDatabaseLib::BlizzardDatabase(dbcWrathFileDirectory, dbdFileDirectory, build_wrath);
+    auto mapTable = blizzardDatabase.LoadTable(table);
+    auto areaTable = blizzardDatabase.LoadTable(areaTableName);
 
     auto iterator = mapTable.Records();
     while (iterator.HasRecords())
