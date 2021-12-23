@@ -2,14 +2,14 @@
 
 namespace BlizzardDatabaseLib
 {
-    BlizzardDatabase::BlizzardDatabase(const std::string& databaseCollectionDirectory, const std::string& databaseDefinitionDirectory) :
-        _databaseFilesLocation(databaseCollectionDirectory), _databaseDefinitionFilesLocation(databaseDefinitionDirectory)
+    BlizzardDatabase::BlizzardDatabase(const std::string& databaseCollectionDirectory, const std::string& databaseDefinitionDirectory, const Structures::Build& build) :
+        _databaseFilesLocation(databaseCollectionDirectory), _databaseDefinitionFilesLocation(databaseDefinitionDirectory), _build(build)
     {
         _loadedTables = std::map<std::string, std::shared_ptr<BlizzardDatabaseTable>>();
         _blizzardTableReaderFactory = Reader::BlizzardTableReaderFactory();
     }
 
-    const BlizzardDatabaseTable& BlizzardDatabase::LoadTable(const std::string& tableName, const Structures::Build& build)
+    const BlizzardDatabaseTable& BlizzardDatabase::LoadTable(const std::string& tableName)
     {
         if (_loadedTables.contains(tableName))
             std::cout << "Table Already Loaded" << std::endl;
@@ -30,7 +30,7 @@ namespace BlizzardDatabaseLib
 
         auto databaseDefinition = DatabaseDefinition(absoluteFilePathOfDatabaseTableDefinition);
         auto tableDefinition = Structures::VersionDefinition();
-        auto tableFound = databaseDefinition.For(build, tableDefinition);
+        auto tableFound = databaseDefinition.For(_build, tableDefinition);
 
         if (tableFound == false)
             std::cout << "Verion Not found" << std::endl;
