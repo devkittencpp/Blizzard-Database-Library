@@ -33,7 +33,7 @@ namespace BlizzardDatabaseLib
         auto absoluteFilePathOfDatabaseTableDefinition =  std::filesystem::path(_databaseDefinitionFilesLocation) /
             (tableName + ".dbd");
 
-        auto databaseDefinition = DatabaseDefinition(absoluteFilePathOfDatabaseTableDefinition);
+        auto databaseDefinition = DatabaseDefinition(absoluteFilePathOfDatabaseTableDefinition.generic_string());
         auto tableDefinition = Structures::VersionDefinition();
         auto tableFound = databaseDefinition.For(_build, tableDefinition);
 
