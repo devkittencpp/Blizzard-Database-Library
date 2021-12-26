@@ -106,6 +106,8 @@ namespace BlizzardDatabaseLib {
                     {
                         auto readerOffset = (indexOfId * _fileHeader.RecordSize) - (_fileHeader.RecordsCount * _fileHeader.RecordSize);
                         auto entries = GetFieldStringArrayValue(readerOffset, startOfStringTable, _bitReader, fieldMeta, columnMeta, palletData, commonData);
+
+                        row.Columns[column.name].Values = entries;
                         //TODO: Handle these values
                     }
 
