@@ -1,4 +1,5 @@
 #include "BlizzardDatabase.h"
+#include <cassert>
 
 namespace BlizzardDatabaseLib
 {
@@ -17,22 +18,26 @@ namespace BlizzardDatabaseLib
         auto databaseFile = std::filesystem::directory_entry();
         for (const auto& entry : std::filesystem::directory_iterator(_databaseFilesLocation))
         {
-            auto filename = entry.path().stem().string();
-	        if(Extension::String::IgnoreCaseCompare(filename, tableName))
-	        {
+          auto filename = entry.path().stem().string();
+          if(Extension::String::IgnoreCaseCompare(filename, tableName))
+          {
                 std::cout << "Database <"<< tableName << "> Table Found!" << std::endl;
                 databaseFile = entry;
-	        }
+          }
         }
+
+        assert(databaseFile.exists() && "Database file was not found!");
         
-        auto absoluteFilePathOfDatabaseTable = _databaseFilesLocation + "\\" + databaseFile.path().filename().string();
-        auto absoluteFilePathOfDatabaseTableDefinition = _databaseDefinitionFilesLocation + "\\" + tableName + ".dbd";
+        auto absoluteFilePathOfDatabaseTable = std::filesystem::path(_databaseFilesLocation) / databaseFile.path()
+            .filename();
+        auto absoluteFilePathOfDatabaseTableDefinition =  std::filesystem::path(_databaseDefinitionFilesLocation) /
+            (tableName + ".dbd");
 
         auto databaseDefinition = DatabaseDefinition(absoluteFilePathOfDatabaseTableDefinition);
         auto tableDefinition = Structures::VersionDefinition();
         auto tableFound = databaseDefinition.For(_build, tableDefinition);
 
-        if (tableFound == false)
+        if (!tableFound)
             std::cout << "Verion Not found" << std::endl;
 
         auto fileStream = std::make_shared<std::ifstream>();
