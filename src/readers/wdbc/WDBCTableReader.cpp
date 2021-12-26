@@ -102,15 +102,16 @@ namespace BlizzardDatabaseLib {
                     column.Value = _stringTable.at(intValue);
                     row.Columns[definition.name] = column;
 
+                    std::vector<std::string> localizedValues = std::vector<std::string>();
+                    localizedValues.push_back(_stringTable.at(intValue));
                     for(int i = 0 ; i < 15; i++)
                     {
-                        column = Structures::BlizzardDatabaseColumn();
-
+                       
                         intValue = bitReader.ReadUint32(32);
-                        column.Value = _stringTable.at(intValue);
-                        row.Columns[definition.name+"_loc"+std::to_string(i)] = column;
+                        localizedValues.push_back(_stringTable.at(intValue));
                     }
 
+                    column.Values = localizedValues;
                     column = Structures::BlizzardDatabaseColumn();
                     intValue = bitReader.ReadUint32(32);
                     column.Value = std::to_string(intValue);
