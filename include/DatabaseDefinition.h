@@ -15,7 +15,7 @@ namespace BlizzardDatabaseLib
 	class DatabaseDefinition
 	{
 	private:
-		const std::string& _databaseDefinitionFile;
+		const std::string _databaseDefinitionFile;
 	public:
 		DatabaseDefinition(const std::string& databaseDefinitionsDirectory);
 		Structures::DBDefinition Read();
