@@ -4,6 +4,7 @@
 #include <stream/StreamReader.h>
 #include <structures/FileStructures.h>
 #include <extensions/FlagExtensions.h>
+#include <cassert>
 
 namespace BlizzardDatabaseLib {
     namespace Reader {
@@ -64,6 +65,8 @@ namespace BlizzardDatabaseLib {
                     auto palletArrayIndex = reader.ReadUint32(columnMeta.compressionData.Pallet.BitWidth);
                     return palletData[palletArrayIndex].As<T>();
                 }
+                default:
+                  assert(false);
                 }
 
                 return static_cast<T>(0);
@@ -101,6 +104,8 @@ namespace BlizzardDatabaseLib {
                         vector.push_back(data);
                     }
                 }
+                  default:
+                    assert(false);
                 }
                 return vector;
             }
@@ -128,6 +133,8 @@ namespace BlizzardDatabaseLib {
                         vector.push_back(value);
                     }
                 }
+                default:
+                  assert(false);
                 }
 
                 return vector;

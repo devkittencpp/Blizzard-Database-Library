@@ -40,8 +40,8 @@ namespace BlizzardDatabaseLib {
         public:
             WDC3TableReader(std::shared_ptr<Stream::StreamReader> streamReader, Structures::VersionDefinition versionDefinition);
             ~WDC3TableReader();
-            void LoadTableStructure();
-            void CloseAllSections();
+            void LoadTableStructure() override;
+            void CloseAllSections() override;
             Structures::BlizzardDatabaseRow RecordById(unsigned int Id) override;
             Structures::BlizzardDatabaseRow Record(unsigned int index) override;
             Structures::BlizzardDatabaseRow RecordDefinition() override;
