@@ -8,6 +8,7 @@
 #include <DatabaseDefinition.h>
 #include <extensions/StringExtensions.h>
 #include <sstream>
+#include <functional>
 
 namespace BlizzardDatabaseLib
 {
@@ -15,14 +16,17 @@ namespace BlizzardDatabaseLib
 	{
 		friend class BlizzardDatabaseTable;
 	private:
-		const std::string _databaseFilesLocation;
 		const std::string _databaseDefinitionFilesLocation;
 		const Structures::Build _build;
 		Reader::BlizzardTableReaderFactory _blizzardTableReaderFactory;
 
 		std::map<std::string, std::shared_ptr<BlizzardDatabaseTable>> _loadedTables;
+
+    std::function<std::ifstream(std::string const&)> _file_read_callback;
+
 	public:
-		BlizzardDatabase(const std::string& databaseCollectionDirectory, const std::string& databaseDefinitionDirectory, const Structures::Build& build);
+		BlizzardDatabase(std::function<std::ifstream(std::string const&)> file_read_callback,
+                     const std::string& databaseDefinitionDirectory, const Structures::Build& build);
 
 		const BlizzardDatabaseTable& LoadTable(const std::string& tableName);
 		void UnloadTable(const std::string& tableName);
