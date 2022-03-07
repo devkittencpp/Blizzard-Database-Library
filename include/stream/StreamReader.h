@@ -14,16 +14,16 @@ namespace BlizzardDatabaseLib {
         class StreamReader
         {
         private:
-            std::ifstream& _underlyingStream;
+            std::shared_ptr<std::ifstream> _underlyingStream;
         public:
-            StreamReader(std::ifstream& stream);
+            StreamReader(std::shared_ptr<std::ifstream> stream);
             ~StreamReader();
             template <typename T> T Read()
             {
                 auto type = T();
                 auto size = sizeof(T);
                 auto pointer = reinterpret_cast<char*>(&type);
-                _underlyingStream.read(pointer, size);
+                _underlyingStream->read(pointer, size);
                 return type;
             }
 
@@ -32,7 +32,7 @@ namespace BlizzardDatabaseLib {
                 auto vector = std::vector<T>(length);
                 auto size = sizeof(T);
                 auto pointer = reinterpret_cast<char*>(vector.data());
-                _underlyingStream.read(pointer, size * length);
+                _underlyingStream->read(pointer, size * length);
                 return vector;
             }
 
