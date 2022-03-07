@@ -3,22 +3,19 @@
 
 namespace BlizzardDatabaseLib
 {
-    BlizzardDatabase::BlizzardDatabase(std::function<std::ifstream(std::string const&)> file_read_callback
-                                       , const std::string& databaseDefinitionDirectory
-                                       , const Structures::Build& build)
-      :
-      _databaseDefinitionFilesLocation(databaseDefinitionDirectory)
-      , _file_read_callback(std::move(file_read_callback))
-      , _build(build)
+    BlizzardDatabase::BlizzardDatabase(const std::string& databaseDefinitionDirectory, const Structures::Build& build)
+    : _databaseDefinitionFilesLocation(databaseDefinitionDirectory)
+    , _build(build)
     {
         _loadedTables = std::map<std::string, std::shared_ptr<BlizzardDatabaseTable>>();
         _blizzardTableReaderFactory = Reader::BlizzardTableReaderFactory();
     }
 
-    const BlizzardDatabaseTable& BlizzardDatabase::LoadTable(const std::string& tableName)
+    const BlizzardDatabaseTable& BlizzardDatabase::LoadTable(const std::string& tableName,
+       std::function<std::shared_ptr<BlizzardDatabaseLib::Stream::IMemStream>(std::string const&)> file_callback)
     {
         if (_loadedTables.contains(tableName))
-            std::cout << "Table already loaded" << std::endl;
+            std::cout << "Table Already Loaded" << std::endl;
 
         auto absoluteFilePathOfDatabaseTableDefinition =  std::filesystem::path(_databaseDefinitionFilesLocation) /
             (tableName + ".dbd");
@@ -30,7 +27,7 @@ namespace BlizzardDatabaseLib
         if (!tableFound)
             std::cout << "Verion Not found" << std::endl;
 
-        auto fileStream = _file_read_callback(tableName);
+        auto fileStream = file_callback("DBFilesClient\\" + tableName + ".dbc");
 
         auto streamReader = std::make_shared<Stream::StreamReader>(fileStream);
         auto fileFormatIdentifier = streamReader->ReadString(4);

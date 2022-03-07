@@ -3,14 +3,13 @@
 namespace BlizzardDatabaseLib {
     namespace Stream {
 
-        StreamReader::StreamReader(std::shared_ptr<std::ifstream> stream) : _underlyingStream(stream)
+        StreamReader::StreamReader(std::shared_ptr<IMemStream> stream) : _underlyingStream(stream)
         {
 
         }
 
         StreamReader::~StreamReader()
         {
-            _underlyingStream->close();
             _underlyingStream.reset();
         }
 

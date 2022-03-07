@@ -5,18 +5,68 @@
 #include <vector>
 #include <string>
 #include <sstream>
+#include <streambuf>
 #include <iomanip>
+#include <cstring>
 #include <structures/Types.h>
+
 
 namespace BlizzardDatabaseLib {
     namespace Stream {
 
+
+        struct IMemBuf: std::streambuf
+        {
+          IMemBuf(const char* base, size_t size)
+          {
+            _buf = new char[size];
+            _size = size;
+            std::memcpy(_buf, base, size);
+            this->setg(_buf, _buf, _buf + size);
+          }
+
+          virtual pos_type seekoff(off_type off, std::ios_base::seekdir dir, std::ios_base::openmode which = std::ios_base::in) override
+          {
+            if(dir == std::ios_base::cur)
+              gbump(off);
+            else if(dir == std::ios_base::end)
+              setg(_buf, _buf + _size + off, _buf + _size);
+            else if(dir == std::ios_base::beg)
+              setg(_buf, _buf+off, _buf + _size);
+
+            return gptr() - eback();
+          }
+
+          virtual pos_type seekpos(std::streampos pos, std::ios_base::openmode mode) override
+          {
+            return seekoff(pos - pos_type(off_type(0)), std::ios_base::beg, mode);
+          }
+
+          ~IMemBuf()
+          {
+            delete[] _buf;
+          }
+
+        private:
+          char* _buf;
+          std::size_t _size;
+        };
+
+        struct IMemStream: virtual IMemBuf, std::istream
+        {
+          IMemStream(const char* mem, size_t size) :
+              IMemBuf(mem, size),
+              std::istream(static_cast<std::streambuf*>(this))
+          {
+          }
+        };
+
         class StreamReader
         {
         private:
-            std::shared_ptr<std::ifstream> _underlyingStream;
+            std::shared_ptr<IMemStream> _underlyingStream;
         public:
-            StreamReader(std::shared_ptr<std::ifstream> stream);
+            StreamReader(std::shared_ptr<IMemStream> stream);
             ~StreamReader();
             template <typename T> T Read()
             {
