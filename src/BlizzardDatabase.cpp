@@ -42,6 +42,11 @@ namespace BlizzardDatabaseLib
         return *_loadedTables[tableName];
     }
 
+    void SaveTable(const BlizzardDatabaseTable& table)
+    {
+
+    }
+
     void BlizzardDatabase::UnloadTable(const std::string& tableName)
     {
         if (!_loadedTables.contains(tableName))

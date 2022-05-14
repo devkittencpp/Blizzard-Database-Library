@@ -6,6 +6,7 @@
 #include <structures/FileStructures.h>
 #include <string>
 #include <algorithm>
+#include <structures/Build.h>
 
 namespace BlizzardDatabaseLib {
 
@@ -13,9 +14,11 @@ namespace BlizzardDatabaseLib {
     {
         friend class BlizzardDatabase;
     private:
+        Structures::DatabaseFormat _fileStructure;
         std::shared_ptr<Reader::IBlizzardTableReader> _tableReader;
     public:
-        BlizzardDatabaseTable(std::shared_ptr<Reader::IBlizzardTableReader> tableReader) : _tableReader(tableReader)
+        BlizzardDatabaseTable(Structures::DatabaseFormat fileStructure, std::shared_ptr<Reader::IBlizzardTableReader> tableReader) 
+            : _tableReader(tableReader), _fileStructure(fileStructure)
         {
 
         }
@@ -40,7 +43,7 @@ namespace BlizzardDatabaseLib {
             return BlizzardDatabaseRecordCollection(_tableReader);
         }
 
-        Structures::BlizzardDatabaseRow GetRecordDefinition()
+        std::map<std::string, Structures::BlizzardDatabaseRowDefiniton> GetRecordDefinition()
         {
             return _tableReader->RecordDefinition();
         }

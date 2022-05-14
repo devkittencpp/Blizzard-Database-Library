@@ -24,6 +24,12 @@ namespace BlizzardDatabaseLib {
             BlizzardDatabaseRow(int recordId) : RecordId(recordId) {}
         };
 
+        struct BlizzardDatabaseRowDefiniton
+        {
+            std::string Type;
+            std::string Name;
+        };
+
         struct ColumnDefinition
         {
             std::string type;

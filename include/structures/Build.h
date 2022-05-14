@@ -5,6 +5,12 @@
 namespace BlizzardDatabaseLib {
     namespace Structures {
 
+        enum class DatabaseFormat
+        {
+            WDBC,
+            WDC3
+        };
+
         class Build
         {
         private:

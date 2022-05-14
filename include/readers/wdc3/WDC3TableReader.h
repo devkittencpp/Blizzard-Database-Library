@@ -44,7 +44,7 @@ namespace BlizzardDatabaseLib {
             void CloseAllSections() override;
             Structures::BlizzardDatabaseRow RecordById(unsigned int Id) override;
             Structures::BlizzardDatabaseRow Record(unsigned int index) override;
-            Structures::BlizzardDatabaseRow RecordDefinition() override;
+            std::map<std::string, Structures::BlizzardDatabaseRowDefiniton> RecordDefinition() override;
             std::size_t RecordCount() override;
         };
     }

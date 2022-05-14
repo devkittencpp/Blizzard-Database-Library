@@ -210,15 +210,16 @@ namespace BlizzardDatabaseLib {
             return recordCount;
         }
 
-        Structures::BlizzardDatabaseRow WDC3TableReader::RecordDefinition()
+        std::map<std::string,Structures::BlizzardDatabaseRowDefiniton> WDC3TableReader::RecordDefinition()
         {
-            auto recordDefinition = Structures::BlizzardDatabaseRow();
+            auto recordDefinition = std::map<std::string, Structures::BlizzardDatabaseRowDefiniton>();
             for (auto& columnInformation : _versionDefinition.versionDefinitions.definitions)
             {
-                if (columnInformation.isID)
-                    continue;
+                auto column = Structures::BlizzardDatabaseRowDefiniton();
+                column.Type = _versionDefinition.columnDefinitions[columnInformation.name].type;
+                column.Name = columnInformation.name;
 
-                recordDefinition.Columns[columnInformation.name] = Structures::BlizzardDatabaseColumn{""};
+                recordDefinition[columnInformation.name] = column;
             }
 
             return recordDefinition;
