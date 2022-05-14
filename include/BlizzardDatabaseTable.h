@@ -14,11 +14,10 @@ namespace BlizzardDatabaseLib {
     {
         friend class BlizzardDatabase;
     private:
-        Structures::DatabaseFormat _fileStructure;
         std::shared_ptr<Reader::IBlizzardTableReader> _tableReader;
     public:
-        BlizzardDatabaseTable(Structures::DatabaseFormat fileStructure, std::shared_ptr<Reader::IBlizzardTableReader> tableReader) 
-            : _tableReader(tableReader), _fileStructure(fileStructure)
+        BlizzardDatabaseTable(std::shared_ptr<Reader::IBlizzardTableReader> tableReader) 
+            : _tableReader(tableReader)
         {
 
         }
