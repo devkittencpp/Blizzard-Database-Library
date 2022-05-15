@@ -42,7 +42,7 @@ namespace BlizzardDatabaseLib {
             return BlizzardDatabaseRecordCollection(_tableReader);
         }
 
-        std::map<std::string, Structures::BlizzardDatabaseRowDefiniton> GetRecordDefinition()
+        std::vector<Structures::BlizzardDatabaseRowDefiniton> GetRecordDefinition()
         {
             return _tableReader->RecordDefinition();
         }
