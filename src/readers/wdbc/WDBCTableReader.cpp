@@ -86,8 +86,19 @@ namespace BlizzardDatabaseLib {
                 auto value = std::string();
                 if (Extension::String::Compare(columnDefinition.type, "int"))
                 {
-                    auto intValue = bitReader.ReadSignedValue64(32).As<int>();
-                    value = std::to_string(intValue);
+                    if (definition.arrLength > 1)
+                    {
+                        for (int i = 0; i < definition.arrLength; i++)
+                        {
+                            auto intValue = bitReader.ReadSignedValue64(32).As<int>();
+                            column.Values.push_back(std::to_string(intValue));
+                        }
+                    }
+                    else
+                    {
+                        auto intValue = bitReader.ReadSignedValue64(32).As<int>();
+                        value = std::to_string(intValue);
+                    }
                 }
 
                 else if (Extension::String::Compare(columnDefinition.type, "string"))
