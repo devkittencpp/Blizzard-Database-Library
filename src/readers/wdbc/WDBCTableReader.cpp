@@ -103,8 +103,19 @@ namespace BlizzardDatabaseLib {
 
                 else if (Extension::String::Compare(columnDefinition.type, "string"))
                 {
-                    auto intValue = bitReader.ReadUint32(32);
-                    value = _stringTable.at(intValue);
+                    if (definition.arrLength > 1)
+                    {
+                        for (int i = 0; i < definition.arrLength; i++)
+                        {
+                            auto intValue = bitReader.ReadUint32(32);
+                            column.Values.push_back(_stringTable.at(intValue));
+                        }
+                    }
+                    else
+                    {
+                        auto intValue = bitReader.ReadUint32(32);
+                        value = _stringTable.at(intValue);
+                    }
                 }
 
                 else if (Extension::String::Compare(columnDefinition.type, "locstring"))
