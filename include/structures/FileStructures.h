@@ -28,6 +28,9 @@ namespace BlizzardDatabaseLib {
         {
             std::string Type;
             std::string Name;
+            bool isID;
+            int arrLength;
+            bool isRelation;
         };
 
         struct ColumnDefinition

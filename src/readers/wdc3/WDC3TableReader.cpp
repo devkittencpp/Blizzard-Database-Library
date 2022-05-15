@@ -218,6 +218,9 @@ namespace BlizzardDatabaseLib {
                 auto column = Structures::BlizzardDatabaseRowDefiniton();
                 column.Type = _versionDefinition.columnDefinitions[columnInformation.name].type;
                 column.Name = columnInformation.name;
+                column.arrLength = columnInformation.arrLength;
+                column.isID = columnInformation.isID;
+                column.isRelation = columnInformation.isRelation;
 
                 recordDefinition[columnInformation.name] = column;
             }
