@@ -41,4 +41,25 @@ namespace BlizzardDatabaseLib {
             std::size_t RecordCount() override;
         };
     }
+    namespace Writer
+    {
+        class WDBCTableWriter 
+        {
+        public:
+            WDBCTableWriter(const std::ofstream& stream, const std::vector<Structures::BlizzardDatabaseRow>& rows, const Structures::VersionDefinition& versionDefinition)
+            {
+
+            }
+            ~WDBCTableWriter()
+            {
+
+            }
+
+            bool Write()
+            {
+
+            }
+
+        };
+    }
 }

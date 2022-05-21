@@ -42,9 +42,23 @@ namespace BlizzardDatabaseLib
         return *_loadedTables[tableName];
     }
 
-    void SaveTable(const BlizzardDatabaseTable& table)
-    {
+    bool BlizzardDatabase::SaveTable(const std::string& outputDirectory, const std::string& tableName, std::vector<Structures::BlizzardDatabaseRow>& rows)
+    {  
+        auto absoluteFilePathOfDatabaseTableDefinition = std::filesystem::path(_databaseDefinitionFilesLocation) /
+            (tableName + ".dbd");
 
+        auto databaseDefinition = DatabaseDefinition(absoluteFilePathOfDatabaseTableDefinition.generic_string());
+        auto tableDefinition = Structures::VersionDefinition();
+        auto tableFound = databaseDefinition.For(_build, tableDefinition);
+
+        if (!tableFound)
+            std::cout << "Verion Not found" << std::endl;
+
+        auto filePath = std::filesystem::path(outputDirectory) / (tableName + ".dbc");
+        auto outputStream = std::ofstream(filePath, std::ofstream::out);
+
+        auto fileWriter = Writer::WDBCTableWriter(outputStream, rows, tableDefinition);
+        return fileWriter.Write();
     }
 
     void BlizzardDatabase::UnloadTable(const std::string& tableName)
