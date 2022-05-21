@@ -79,8 +79,9 @@ namespace BlizzardDatabaseLib {
 
                 for (auto const& entry : _indexBasedTable)
                 {
-                    auto str = entry.second + "\0";
+                    auto str = entry.second;
                     std::copy(str.begin(), str.end(), std::back_inserter(*stringTablePtr.get()));
+                    stringTablePtr->push_back('\0');
                 }
 
                 return stringTablePtr;
@@ -199,7 +200,7 @@ namespace BlizzardDatabaseLib {
 
                         if (columnDefintion.type == "locstring")
                         {
-                            for (int i = 0; i < 15; i++)
+                            for (int i = 0; i < 16; i++)
                             {
                                 auto value = rowColumd.Values[i];
                                 stream << stringTable.Insert(value);
