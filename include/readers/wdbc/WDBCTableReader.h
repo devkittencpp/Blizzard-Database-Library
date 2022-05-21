@@ -206,7 +206,7 @@ namespace BlizzardDatabaseLib {
                             }
 
                             auto flagValue = row.Columns.at(column.name + "_flags");
-                            stream << stringTable.Insert(flagValue.Value);
+                            stream << std::stoi(flagValue.Value);
                         }
                     }
                 }
