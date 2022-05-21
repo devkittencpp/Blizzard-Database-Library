@@ -87,6 +87,12 @@ namespace BlizzardDatabaseLib {
             }
         };
 
+        template<typename T> inline
+        auto write(std::ostream& stream, T const& val) -> void
+        {
+            stream.write(reinterpret_cast<char const*>(&val), sizeof(T));
+        }
+
         class WDBCTableWriter 
         {
             std::ofstream& _stream;
@@ -104,11 +110,11 @@ namespace BlizzardDatabaseLib {
             bool Write(const std::vector<Structures::BlizzardDatabaseRow>& rows)
             {
                 auto recordCount = rows.size();
-                auto fieldCount = _versionDefinition.columnDefinitions.size();
+                auto fieldCount = 0;
                 auto recordSize = 0;
                 auto stringTableSize = 0;
 
-                //Build Record Size for dbd 
+                //Build Record/Field Size for dbd 
                 for (auto const& column : _versionDefinition.versionDefinitions.definitions)
                 {
                     auto columnDefintion = _versionDefinition.columnDefinitions[column.name];
@@ -116,14 +122,17 @@ namespace BlizzardDatabaseLib {
                     if (columnDefintion.type == "locstring")
                     {
                         recordSize += 16 * 4;
+                        fieldCount += 16;
                     }
                     if (arrayLength > 0)
                     {
                         recordSize += arrayLength * 4;
+                        fieldCount += arrayLength;
                     }
                     else
                     {
                         recordSize += 4;
+                        fieldCount += 1;
                     }
                 }
 
@@ -137,13 +146,13 @@ namespace BlizzardDatabaseLib {
                     {
                         auto columnDefintion = _versionDefinition.columnDefinitions[column.name];
                         auto rowColumd = row.Columns.at(column.name);
-                        
+
                         if (columnDefintion.type == "int")
                         {
                             if (column.isID)
                             {
                                 stream << recordId;
-                            }    
+                            }
                             else if (column.arrLength > 0)
                             {
                                 for (int i = 0; i < column.arrLength; i++)
@@ -155,7 +164,7 @@ namespace BlizzardDatabaseLib {
                             else
                             {
                                 stream << std::stoi(rowColumd.Value);
-                            }                    
+                            }
                         }
                         if (columnDefintion.type == "float")
                         {
@@ -183,7 +192,7 @@ namespace BlizzardDatabaseLib {
                                 }
                             }
                             else
-                            {                            
+                            {
                                 stream << stringTable.Insert(rowColumd.Value);
                             }
                         }
@@ -198,7 +207,7 @@ namespace BlizzardDatabaseLib {
 
                             auto flagValue = row.Columns.at(column.name + "_flags");
                             stream << stringTable.Insert(flagValue.Value);
-                        }             
+                        }
                     }
                 }
 
@@ -207,13 +216,13 @@ namespace BlizzardDatabaseLib {
 
                 _stream << 'W' << 'D' << 'B' << 'C';
 
-                _stream << (uint32_t)recordCount;
-                _stream << (uint32_t)fieldCount;
-                _stream << (uint32_t)recordSize;
-                _stream << (uint32_t)stringTableSize;
+                write(_stream, (uint32_t)recordCount);
+                write(_stream, (uint32_t)fieldCount);
+                write(_stream, (uint32_t)recordSize);
+                write(_stream, (uint32_t)stringTableSize);
 
                 _stream.write(reinterpret_cast<const char*>(stream.getBuf()), stream.getLength());
-                _stream << stringTableBuffer->data();
+                _stream.write(reinterpret_cast<const char*>(stringTableBuffer->data()), stringTableBuffer->size());
 
                 _stream.close();
 
