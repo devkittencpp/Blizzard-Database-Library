@@ -52,10 +52,12 @@ namespace BlizzardDatabaseLib {
             StringTable()
             {
                 _stringTable = std::map<std::string, int>();
-                _stringTable[""] = 0;
             }
             int Insert(std::string& string)
             {
+                if (string == "")
+                    return 0;
+
                 if (_stringTable.count(string))
                 {
                     return _stringTable[string];
