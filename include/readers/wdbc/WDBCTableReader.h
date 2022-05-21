@@ -17,6 +17,7 @@
 #include <extensions/FlagExtensions.h>
 #include <extensions/MemoryExtensions.h>
 #include <extensions/VectorExtensions.h>
+#include <external/ByteStream.h>
 
 
 namespace BlizzardDatabaseLib {
@@ -43,10 +44,55 @@ namespace BlizzardDatabaseLib {
     }
     namespace Writer
     {
+        class StringTable
+        {
+            std::map<std::string, int> _stringTable;
+            int index = 1;
+        public:
+            StringTable()
+            {
+                _stringTable = std::map<std::string, int>();
+                _stringTable[""] = 0;
+            }
+            int Insert(std::string& string)
+            {
+                if (_stringTable.count(string))
+                {
+                    return _stringTable[string];
+                }
+
+                _stringTable[string] = index;
+
+                index++;
+                return  _stringTable[string];
+            }
+
+            std::shared_ptr<std::vector<char>> ToBuffer()
+            {
+                auto _indexBasedTable = std::map<int, std::string>();
+                for (auto const& entry : _stringTable)
+                {
+                    _indexBasedTable.emplace(entry.second, entry.first);
+                }
+
+                auto stringTablePtr = std::make_shared<std::vector<char>>();
+
+                for (auto const& entry : _indexBasedTable)
+                {
+                    auto str = entry.second + "\0";
+                    std::copy(str.begin(), str.end(), std::back_inserter(*stringTablePtr.get()));
+                }
+
+                return stringTablePtr;
+            }
+        };
+
         class WDBCTableWriter 
         {
+            std::ofstream& _stream;
+            Structures::VersionDefinition& _versionDefinition;
         public:
-            WDBCTableWriter(const std::ofstream& stream, const std::vector<Structures::BlizzardDatabaseRow>& rows, const Structures::VersionDefinition& versionDefinition)
+            WDBCTableWriter(std::ofstream& stream,  Structures::VersionDefinition& versionDefinition): _stream(stream) , _versionDefinition(versionDefinition)
             {
 
             }
@@ -55,11 +101,124 @@ namespace BlizzardDatabaseLib {
 
             }
 
-            bool Write()
+            bool Write(const std::vector<Structures::BlizzardDatabaseRow>& rows)
             {
+                auto recordCount = rows.size();
+                auto fieldCount = _versionDefinition.columnDefinitions.size();
+                auto recordSize = 0;
+                auto stringTableSize = 0;
 
+                //Build Record Size for dbd 
+                for (auto const& column : _versionDefinition.versionDefinitions.definitions)
+                {
+                    auto columnDefintion = _versionDefinition.columnDefinitions[column.name];
+                    auto arrayLength = column.arrLength;
+                    if (columnDefintion.type == "locstring")
+                    {
+                        recordSize += 16 * 4;
+                    }
+                    if (arrayLength > 0)
+                    {
+                        recordSize += arrayLength * 4;
+                    }
+                    else
+                    {
+                        recordSize += 4;
+                    }
+                }
+
+                ByteStream stream(recordSize * recordCount);
+                auto stringTable = StringTable();
+                auto stringTableIndex = 1;
+                for (auto const& row : rows)
+                {
+                    auto recordId = row.RecordId;
+                    for (auto const& column : _versionDefinition.versionDefinitions.definitions)
+                    {
+                        auto columnDefintion = _versionDefinition.columnDefinitions[column.name];
+                        auto rowColumd = row.Columns.at(column.name);
+                        
+                        if (columnDefintion.type == "int")
+                        {
+                            if (column.isID)
+                            {
+                                stream << recordId;
+                            }    
+                            else if (column.arrLength > 0)
+                            {
+                                for (int i = 0; i < column.arrLength; i++)
+                                {
+                                    auto value = rowColumd.Values[i];
+                                    stream << std::stoi(value);
+                                }
+                            }
+                            else
+                            {
+                                stream << std::stoi(rowColumd.Value);
+                            }                    
+                        }
+                        if (columnDefintion.type == "float")
+                        {
+                            if (column.arrLength > 0)
+                            {
+                                for (int i = 0; i < column.arrLength; i++)
+                                {
+                                    auto value = rowColumd.Values[i];
+                                    stream << std::stof(value);
+                                }
+                            }
+                            else
+                            {
+                                stream << std::stof(rowColumd.Value);
+                            }
+                        }
+                        if (columnDefintion.type == "string")
+                        {
+                            if (column.arrLength > 0)
+                            {
+                                for (int i = 0; i < column.arrLength; i++)
+                                {
+                                    auto value = rowColumd.Values[i];
+                                    stream << stringTable.Insert(value);
+                                }
+                            }
+                            else
+                            {                            
+                                stream << stringTable.Insert(rowColumd.Value);
+                            }
+                        }
+
+                        if (columnDefintion.type == "locstring")
+                        {
+                            for (int i = 0; i < 15; i++)
+                            {
+                                auto value = rowColumd.Values[i];
+                                stream << stringTable.Insert(value);
+                            }
+
+                            auto flagValue = row.Columns.at(column.name + "_flags");
+                            stream << stringTable.Insert(flagValue.Value);
+                        }             
+                    }
+                }
+
+                auto stringTableBuffer = stringTable.ToBuffer();
+                stringTableSize = stringTableBuffer->size();
+
+                _stream << 'W' << 'D' << 'B' << 'C';
+
+                _stream << (uint32_t)recordCount;
+                _stream << (uint32_t)fieldCount;
+                _stream << (uint32_t)recordSize;
+                _stream << (uint32_t)stringTableSize;
+
+                _stream.write(reinterpret_cast<const char*>(stream.getBuf()), stream.getLength());
+                _stream << stringTableBuffer->data();
+
+                _stream.close();
+
+                return true;
             }
-
         };
     }
 }

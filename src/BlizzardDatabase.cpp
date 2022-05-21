@@ -57,8 +57,8 @@ namespace BlizzardDatabaseLib
         auto filePath = std::filesystem::path(outputDirectory) / (tableName + ".dbc");
         auto outputStream = std::ofstream(filePath, std::ofstream::out);
 
-        auto fileWriter = Writer::WDBCTableWriter(outputStream, rows, tableDefinition);
-        return fileWriter.Write();
+        auto fileWriter = Writer::WDBCTableWriter(outputStream,  tableDefinition);
+        return fileWriter.Write(rows);
     }
 
     void BlizzardDatabase::UnloadTable(const std::string& tableName)
