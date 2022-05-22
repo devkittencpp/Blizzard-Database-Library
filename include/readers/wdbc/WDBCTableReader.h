@@ -65,7 +65,7 @@ namespace BlizzardDatabaseLib {
 
                 _stringTable[string] = index;
 
-                index++;
+                index += string.length() + 1;
                 return  _stringTable[string];
             }
 
@@ -80,7 +80,7 @@ namespace BlizzardDatabaseLib {
                 auto stringTablePtr = std::vector<char>();
                 stringTablePtr.push_back('\0');
                 for (auto const& entry : _indexBasedTable)
-                {
+                { 
                     auto str = entry.second;
                     std::copy(str.begin(), str.end(), std::back_inserter(stringTablePtr));
                     stringTablePtr.push_back('\0');
