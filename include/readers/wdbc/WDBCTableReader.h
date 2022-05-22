@@ -209,7 +209,7 @@ namespace BlizzardDatabaseLib {
                             }
 
                             auto flagValue = row.Columns.at(column.name + "_flags");
-                            stream << (uint32_t)std::stoi(flagValue.Value);
+                            stream << (uint32_t)std::stoul(flagValue.Value);
                         }
                     }
                 }
