@@ -154,7 +154,7 @@ namespace BlizzardDatabaseLib {
                         {
                             if (column.isID)
                             {
-                                stream << recordId;
+                                stream << ((uint32_t))recordId;
                             }
                             else if (column.arrLength > 0)
                             {
