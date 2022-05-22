@@ -69,7 +69,7 @@ namespace BlizzardDatabaseLib {
                 return  _stringTable[string];
             }
 
-            std::shared_ptr<std::vector<char>> ToBuffer()
+            std::vector<char> ToBuffer()
             {
                 auto _indexBasedTable = std::map<int, std::string>();
                 for (auto const& entry : _stringTable)
@@ -77,13 +77,13 @@ namespace BlizzardDatabaseLib {
                     _indexBasedTable.emplace(entry.second, entry.first);
                 }
 
-                auto stringTablePtr = std::make_shared<std::vector<char>>();
-
+                auto stringTablePtr = std::vector<char>();
+                stringTablePtr.push_back('\0');
                 for (auto const& entry : _indexBasedTable)
                 {
                     auto str = entry.second;
-                    std::copy(str.begin(), str.end(), std::back_inserter(*stringTablePtr.get()));
-                    stringTablePtr->push_back('\0');
+                    std::copy(str.begin(), str.end(), std::back_inserter(stringTablePtr));
+                    stringTablePtr.push_back('\0');
                 }
 
                 return stringTablePtr;
@@ -215,7 +215,7 @@ namespace BlizzardDatabaseLib {
                 }
 
                 auto stringTableBuffer = stringTable.ToBuffer();
-                stringTableSize = stringTableBuffer->size();
+                stringTableSize = stringTableBuffer.size();
 
                 _stream << 'W' << 'D' << 'B' << 'C';
 
@@ -225,7 +225,7 @@ namespace BlizzardDatabaseLib {
                 write(_stream, (uint32_t)stringTableSize);
 
                 _stream.write(reinterpret_cast<const char*>(stream.getBuf()), stream.getLength());
-                _stream.write(reinterpret_cast<const char*>(stringTableBuffer->data()), stringTableBuffer->size());
+                _stream.write(reinterpret_cast<const char*>(stringTableBuffer.data()), stringTableBuffer.size());
 
                 _stream.close();
 

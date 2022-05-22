@@ -55,7 +55,7 @@ namespace BlizzardDatabaseLib
             std::cout << "Verion Not found" << std::endl;
 
         auto filePath = std::filesystem::path(outputDirectory) / (tableName + ".dbc");
-        auto outputStream = std::ofstream(filePath, std::ofstream::out);
+        auto outputStream = std::ofstream(filePath, std::ios::out | std::ios::binary);
 
         auto fileWriter = Writer::WDBCTableWriter(outputStream,  tableDefinition);
         return fileWriter.Write(rows);
