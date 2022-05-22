@@ -47,13 +47,13 @@ namespace BlizzardDatabaseLib {
         class StringTable
         {
             std::map<std::string, int> _stringTable;
-            int index = 1;
+            uint32_t index = 1;
         public:
             StringTable()
             {
                 _stringTable = std::map<std::string, int>();
             }
-            int Insert(std::string& string)
+            uint32_t Insert(std::string& string)
             {
                 if (string == "")
                     return 0;
@@ -161,12 +161,12 @@ namespace BlizzardDatabaseLib {
                                 for (int i = 0; i < column.arrLength; i++)
                                 {
                                     auto value = rowColumd.Values[i];
-                                    stream << std::stoi(value);
+                                    stream << (uint32_t)std::stoi(value);
                                 }
                             }
                             else
                             {
-                                stream << std::stoi(rowColumd.Value);
+                                stream << (uint32_t)std::stoi(rowColumd.Value);
                             }
                         }
                         if (columnDefintion.type == "float")
@@ -209,7 +209,7 @@ namespace BlizzardDatabaseLib {
                             }
 
                             auto flagValue = row.Columns.at(column.name + "_flags");
-                            stream << std::stoi(flagValue.Value);
+                            stream << (uint32_t)std::stoi(flagValue.Value);
                         }
                     }
                 }
