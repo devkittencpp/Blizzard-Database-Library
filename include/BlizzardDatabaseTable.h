@@ -29,7 +29,7 @@ namespace BlizzardDatabaseLib {
 
         unsigned int RecordCount()
         {
-            return _tableReader->RecordCount();
+            return static_cast<unsigned int>(_tableReader->RecordCount());
         }
 
         Structures::BlizzardDatabaseRow Record(unsigned int id)

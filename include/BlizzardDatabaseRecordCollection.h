@@ -16,7 +16,7 @@ namespace BlizzardDatabaseLib {
     public:
         BlizzardDatabaseRecordCollection(std::shared_ptr<Reader::IBlizzardTableReader> tableReader)
         {
-            _maxIndex = tableReader->RecordCount();
+            _maxIndex = static_cast<int>(tableReader->RecordCount());
             _tableReader = tableReader;
         }
 
