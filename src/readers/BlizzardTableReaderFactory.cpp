@@ -10,6 +10,7 @@ namespace BlizzardDatabaseLib {
 				return std::make_shared<WDC3TableReader>(streamReader, versionDefinition);
 			if (Extension::String::Compare(formatSignature, std::string("WDBC")))
 				return std::make_shared<WDBCTableReader>(streamReader, versionDefinition);
+			return nullptr;
 		}
 	}
 }

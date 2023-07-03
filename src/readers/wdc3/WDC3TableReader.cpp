@@ -73,7 +73,7 @@ namespace BlizzardDatabaseLib {
                 {
                     CommonData[i] = std::map<int, Structures::Int32>();
                     auto entires = ColumnMeta[i].AdditionalDataSize / 8;
-                    for (int j = 0; j < entires; j++)
+                    for (int j = 0; j < static_cast<int>(entires); j++)
                     {
                         auto startOfList = reinterpret_cast<char*>(&CommonData[i][j]);
                         //_streamReader.ReadBlock(startOfList, length * sizeof(int));
@@ -138,7 +138,7 @@ namespace BlizzardDatabaseLib {
             for (auto& section : _sectionLookup)
             {
                 //In this section
-                if (index < section.first)
+                if (static_cast<int>(index) < section.first)
                 {
                     sectionReader = section.second;
 
@@ -181,7 +181,7 @@ namespace BlizzardDatabaseLib {
 
             auto record =  recordReader.ReadRecord(currentSectionIndex, sectionReader->Section, bitReader, Meta, ColumnMeta, PalletData, CommonData, sectionReader->ReferenceData, sectionReader->IndexData);
           
-            if (sectionReader->IsOpen && index + 1 >= sectionMaxIndex)
+            if (sectionReader->IsOpen && static_cast<int>(index + 1) >= sectionMaxIndex)
             {
                 sectionReader->CloseSection();
                 _sectionMaxIndexCounter += currentSectionIndex + 1;

@@ -14,7 +14,7 @@ namespace BlizzardDatabaseLib {
                 auto interator = std::find(vector.begin(), vector.end(), search);
 
                 if (interator != vector.cend()) {
-                    index = std::distance(vector.begin(), interator);
+                    index = static_cast<unsigned int>(std::distance(vector.begin(), interator));
                     return true;
                 }
                 else {

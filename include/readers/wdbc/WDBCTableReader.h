@@ -65,7 +65,7 @@ namespace BlizzardDatabaseLib {
 
                 _stringTable[string] = index;
 
-                index += string.length() + 1;
+                index += static_cast<std::uint32_t>(string.length() + 1);
                 return  _stringTable[string];
             }
 
@@ -139,7 +139,7 @@ namespace BlizzardDatabaseLib {
                     }
                 }
 
-                ByteStream stream(recordSize * recordCount);
+                ByteStream stream(static_cast<unsigned int>(recordSize * recordCount));
                 auto stringTable = StringTable();
                 auto stringTableIndex = 1;
                 for (auto const& row : rows)
@@ -215,7 +215,7 @@ namespace BlizzardDatabaseLib {
                 }
 
                 auto stringTableBuffer = stringTable.ToBuffer();
-                stringTableSize = stringTableBuffer.size();
+                stringTableSize = static_cast<int>(stringTableBuffer.size());
 
                 _stream << 'W' << 'D' << 'B' << 'C';
 

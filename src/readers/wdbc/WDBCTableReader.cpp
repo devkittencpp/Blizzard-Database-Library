@@ -43,7 +43,7 @@ namespace BlizzardDatabaseLib {
                 auto lastPosition = _streamReader->Position();
                 auto stringValue = _streamReader->ReadString();
                 _stringTable[i] = stringValue;
-                i += _streamReader->Position() - lastPosition;
+                i += static_cast<int>(_streamReader->Position() - lastPosition);
             }
         }
 
