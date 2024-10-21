@@ -18,12 +18,22 @@ namespace BlizzardDatabaseLib {
             return stream.str();
         }
 
+        int BitReader::ReadInt32(int numberOfBits)
+        {
+          return static_cast<int>(ReadUint32(numberOfBits));
+        }
+
         unsigned int BitReader::ReadUint32(int numberOfBits)
         {
             auto index = Offset + (Position >> 3);
             auto p1 = (32 - numberOfBits - (Position & 7));
             auto p2 = (32 - numberOfBits);
             auto ptrSize = sizeof(unsigned int);
+
+            if (index + ptrSize > DataLength)
+            {
+              throw std::out_of_range("Read access out of bounds");
+            }
 
             unsigned int result;
             memcpy(&result, _dataStart.get() + index, ptrSize);
@@ -39,7 +49,16 @@ namespace BlizzardDatabaseLib {
             auto index = Offset + (Position >> 3);
             auto p1 = (64 - numberOfBits - (Position & 7));
             auto p2 = (64 - numberOfBits);
-            auto ptrSize = sizeof(unsigned long long);
+            unsigned long long ptrSize = sizeof(unsigned long long);
+
+            // hackfix because it reads out of bounds if using ptrSize 8 with smaller types
+            if (numberOfBits <= 32)
+              ptrSize = sizeof(unsigned int);
+
+            if (index + ptrSize > DataLength)
+            {
+              throw std::out_of_range("Read access out of bounds");
+            }
 
             unsigned long long result;
             memcpy(&result, _dataStart.get() + index, ptrSize);

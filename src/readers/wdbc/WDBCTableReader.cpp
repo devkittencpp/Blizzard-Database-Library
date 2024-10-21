@@ -90,13 +90,15 @@ namespace BlizzardDatabaseLib {
                     {
                         for (int i = 0; i < definition.arrLength; i++)
                         {
-                            auto intValue = bitReader.ReadSignedValue64(32).As<int>();
+                            // auto intValue = bitReader.ReadSignedValue64(32).As<int>();
+                            int intValue = (bitReader.ReadInt32(32));
                             column.Values.push_back(std::to_string(intValue));
                         }
                     }
                     else
                     {
-                        auto intValue = bitReader.ReadSignedValue64(32).As<int>();
+                        // auto intValue = bitReader.ReadSignedValue64(32).As<int>();
+                        int intValue = (bitReader.ReadInt32(32));
                         value = std::to_string(intValue);
                     }
                 }

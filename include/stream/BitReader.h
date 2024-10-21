@@ -17,6 +17,7 @@ namespace BlizzardDatabaseLib {
             int Offset;
             BitReader(std::unique_ptr<char[]>& dataStart, unsigned int dataLength);
             std::string ReadNullTermintingString();
+            int ReadInt32(int numberOfBits);
             unsigned int ReadUint32(int numberOfBits);
             unsigned long long ReadUint64(int numberOfBits);
             Structures::Int64 ReadValue64(int numberOfBits);
