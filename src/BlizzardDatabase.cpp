@@ -15,7 +15,10 @@ namespace BlizzardDatabaseLib
        std::function<std::shared_ptr<BlizzardDatabaseLib::Stream::IMemStream>(std::string const&)> file_callback)
     {
         if (_loadedTables.contains(tableName))
+        {
             std::cout << "Table Already Loaded" << std::endl;
+            return *_loadedTables[tableName];
+        }
 
         auto absoluteFilePathOfDatabaseTableDefinition =  std::filesystem::path(_databaseDefinitionFilesLocation) /
             (tableName + ".dbd");
@@ -64,7 +67,10 @@ namespace BlizzardDatabaseLib
     void BlizzardDatabase::UnloadTable(const std::string& tableName)
     {
         if (!_loadedTables.contains(tableName))
+        {
             std::cout << "Table Not Loaded" << std::endl;
+            return;
+        }
 
         auto table = _loadedTables.at(tableName);
 
