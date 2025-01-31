@@ -6,6 +6,7 @@
 #include <vector>
 #include <map>
 #include <sstream>
+#include <cstdint>
 #include <flags/TableFormatSignatures.h>
 #include <readers/IBlizzardTableReader.h>
 #include <readers/wdbc/WDBCRecordReader.h>
